@@ -1,0 +1,8 @@
+# Ignore .env files in both frontend and backend
+frontend/.env
+backend/.env
+
+# Optional: Ignore OS-specific and IDE files
+.DS_Store
+node_modules/
+dist/
