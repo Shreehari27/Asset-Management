@@ -1,0 +1,40 @@
+<mat-card>
+  <mat-card-title>Edit Asset</mat-card-title>
+  <form [formGroup]="assetForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Asset Code</mat-label>
+      <input matInput formControlName="asset_code" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Serial Number</mat-label>
+      <input matInput formControlName="serial_number" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Asset Type</mat-label>
+      <mat-select formControlName="asset_type">
+        <mat-option *ngFor="let type of assetTypes" [value]="type">{{ type }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Asset Brand</mat-label>
+      <mat-select formControlName="asset_brand">
+        <mat-option *ngFor="let brand of assetBrands" [value]="brand">{{ brand }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option value="available">Available</mat-option>
+        <mat-option value="assigned">Assigned</mat-option>
+        <mat-option value="maintenance">Maintenance</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit">Update</button>
+    <button mat-button routerLink="/assets">Cancel</button>
+  </form>
+</mat-card>

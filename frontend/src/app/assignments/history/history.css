@@ -1,0 +1,52 @@
+/* History Page Header */
+.history-header {
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  color: #1976d2;
+  /* Material blue */
+}
+
+/* Filters container */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+  padding-bottom: 5px;
+}
+
+/* Individual filter fields */
+.filters mat-form-field {
+  width: 250px;
+  min-width: 250px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+/* Reset button */
+.filters button {
+  height: 56px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: none;
+  padding: 0 20px;
+  border: 1px solid #1976d2;
+  color: #1976d2;
+  background: transparent;
+
+  /* Align the button vertically with form fields */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hover effect */
+.filters button:hover {
+  background-color: #1976d2;
+  color: #fff;
+  transition: 0.3s ease;
+}

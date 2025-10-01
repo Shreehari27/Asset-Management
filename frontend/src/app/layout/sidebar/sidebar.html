@@ -1,0 +1,71 @@
+<mat-nav-list>
+  <!-- Dashboard -->
+  <a mat-list-item 
+     routerLink="/" 
+     matRipple 
+     [matRippleColor]="'rgba(255,255,255,0.3)'" 
+     class="bubble">
+    <mat-icon>dashboard</mat-icon>
+    <span *ngIf="!collapsed">Dashboard</span>
+  </a>
+
+  <!-- Employees Section -->
+  <mat-divider *ngIf="!collapsed"></mat-divider>
+  <h3 mat-subheader *ngIf="!collapsed">Employees</h3>
+  <a mat-list-item 
+     routerLink="/employees" 
+     matRipple 
+     [matRippleColor]="'rgba(255,255,255,0.3)'" 
+     class="bubble">
+    <mat-icon>group</mat-icon>
+    <span *ngIf="!collapsed">All Employees</span>
+  </a>
+  <a mat-list-item 
+     routerLink="/employees/add" 
+     matRipple 
+     [matRippleColor]="'rgba(255,255,255,0.3)'" 
+     class="bubble">
+    <mat-icon>person_add</mat-icon>
+    <span *ngIf="!collapsed">Add Employee</span>
+  </a>
+
+  <!-- Assets Section -->
+  <mat-divider *ngIf="!collapsed"></mat-divider>
+  <h3 mat-subheader *ngIf="!collapsed">Assets</h3>
+  <a mat-list-item 
+     routerLink="/assets" 
+     matRipple 
+     [matRippleColor]="'rgba(255,255,255,0.3)'" 
+     class="bubble">
+    <mat-icon>inventory</mat-icon>
+    <span *ngIf="!collapsed">All Assets</span>
+  </a>
+  <a mat-list-item 
+     routerLink="/assignments/assign" 
+     matRipple 
+     [matRippleColor]="'rgba(255,255,255,0.3)'" 
+     class="bubble">
+    <mat-icon>add_task</mat-icon>
+    <span *ngIf="!collapsed">Assign Asset</span>
+  </a>
+
+  <!-- Assignments Section -->
+  <mat-divider *ngIf="!collapsed"></mat-divider>
+  <h3 mat-subheader *ngIf="!collapsed">Assignments</h3>
+  <a mat-list-item 
+     routerLink="/assignments/live" 
+     matRipple 
+     [matRippleColor]="'rgba(255,255,255,0.3)'" 
+     class="bubble">
+    <mat-icon>assignment</mat-icon>
+    <span *ngIf="!collapsed">Live Assignments</span>
+  </a>
+  <a mat-list-item 
+     routerLink="/assignments/history" 
+     matRipple 
+     [matRippleColor]="'rgba(255,255,255,0.3)'" 
+     class="bubble">
+    <mat-icon>history</mat-icon>
+    <span *ngIf="!collapsed">Assignment History</span>
+  </a>
+</mat-nav-list>

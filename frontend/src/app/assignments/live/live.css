@@ -1,0 +1,94 @@
+/* Adjust spacing and alignment for Live Assignments component */
+
+:host {
+  display: block;
+  padding: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+tr {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+button {
+  margin: 0 4px;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+/* Filters spacing */
+.filters {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filters input,
+.filters select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Fix mat-label visibility issues - ensure labels are fully visible */
+.search-container mat-form-field .mat-mdc-form-field-label,
+.filters mat-form-field .mat-mdc-form-field-label,
+mat-form-field .mat-mdc-form-field-label {
+  position: absolute !important;
+  top: -8px !important;
+  left: 12px !important;
+  background: white !important;
+  padding: 0 4px !important;
+  z-index: 10 !important;
+  font-size: 12px !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: fit-content !important;
+}
+
+.search-container mat-form-field,
+.filters mat-form-field,
+mat-form-field {
+  position: relative;
+  height: 72px !important;
+  box-sizing: border-box !important;
+  padding-top: 16px;
+}
+
+.search-container mat-form-field.mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline,
+.filters mat-form-field.mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline,
+mat-form-field.mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline {
+  top: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+  }
+}

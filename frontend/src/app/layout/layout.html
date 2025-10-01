@@ -1,0 +1,26 @@
+<div class="layout">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+
+      <!-- Sidebar Toggle Icon (custom SVG instead of nz-icon) -->
+      <button class="menu-toggle" (click)="toggleSidebar()">
+        <img src="/hamburger-icon.svg" alt="menu" class="menu-icon" />
+      </button>
+
+      <!-- Logo (centered) -->
+      --------
+    </div>
+  </header>
+
+  <!-- Main section (sidebar + content side by side) -->
+  <div class="main-container">
+    <aside class="sidebar" [class.collapsed]="collapsed">
+      <app-sidebar [collapsed]="collapsed"></app-sidebar>
+    </aside>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

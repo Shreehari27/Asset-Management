@@ -1,0 +1,56 @@
+/* Adjust spacing and alignment for Return Dialog component */
+
+:host {
+  display: block;
+  padding: 16px;
+}
+
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+mat-form-field {
+  width: 100%;
+  position: relative;
+  height: 72px; /* Increased height to accommodate labels and input area */
+  box-sizing: border-box; /* Include padding in height calculation */
+}
+
+/* Fix mat-label visibility issues - ensure labels are fully visible */
+mat-form-field .mat-mdc-form-field-label {
+  position: absolute !important;
+  top: -8px !important;
+  left: 12px !important;
+  background: white !important;
+  padding: 0 4px !important;
+  z-index: 10 !important;
+  font-size: 12px !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: fit-content !important;
+}
+
+/* Ensure mat-form-field has proper height to accommodate labels */
+mat-form-field {
+  padding-top: 16px;
+}
+
+/* Fix for mat-form-field outline appearance */
+mat-form-field.mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline {
+  top: 0;
+}
+
+mat-dialog-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

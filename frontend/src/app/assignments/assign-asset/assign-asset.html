@@ -1,0 +1,119 @@
+<div class="assign-container">
+  <h2>Assign Assets</h2>
+
+  <form [formGroup]="assignmentForm" (ngSubmit)="onSubmit()">
+
+    <!-- Employee & Assigned By -->
+    <div class="row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Select Employee</mat-label>
+        <mat-select formControlName="emp_code" required>
+          <mat-option *ngFor="let emp of employees" [value]="emp.emp_code">
+            {{ emp.name }} ({{ emp.emp_code }})
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="assignmentForm.get('emp_code')?.invalid && assignmentForm.get('emp_code')?.touched">
+          Employee selection is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Assigned By (IT Staff)</mat-label>
+        <mat-select formControlName="assigned_by" required>
+          <mat-option *ngFor="let it of itPersons" [value]="it.emp_code">
+            {{ it.name }} ({{ it.emp_code }})
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="assignmentForm.get('assigned_by')?.invalid && assignmentForm.get('assigned_by')?.touched">
+          IT Staff selection is required
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Assignment Rows -->
+    <div formArrayName="assignments">
+      <div *ngFor="let assignment of assignments.controls; let i = index" [formGroupName]="i" class="assignment-row">
+
+        <!-- First Row -->
+        <div class="row">
+          <!-- Asset Type -->
+          <mat-form-field appearance="outline" class="row-field">
+            <mat-label>Asset Type</mat-label>
+            <mat-select formControlName="asset_type" required>
+              <mat-option *ngFor="let type of assetTypes" [value]="type">
+                {{ type }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="assignment.get('asset_type')?.invalid && assignment.get('asset_type')?.touched">
+              Asset type is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Asset Code -->
+          <mat-form-field appearance="outline" class="row-field">
+            <mat-label>Asset Code</mat-label>
+            <input matInput formControlName="asset_code" required />
+            <mat-error *ngIf="assignment.get('asset_code')?.invalid && assignment.get('asset_code')?.touched">
+              Asset code is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Serial Number -->
+          <mat-form-field appearance="outline" class="row-field">
+            <mat-label>Serial Number</mat-label>
+            <input matInput formControlName="serial_number" required />
+            <mat-error *ngIf="assignment.get('serial_number')?.invalid && assignment.get('serial_number')?.touched">
+              Serial number is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Second Row -->
+        <div class="row">
+          <!-- Brand -->
+          <mat-form-field appearance="outline" class="row-field">
+            <mat-label>Brand</mat-label>
+            <input matInput formControlName="asset_brand" />
+          </mat-form-field>
+
+          <!-- Assign Date -->
+          <mat-form-field appearance="outline" class="row-field">
+            <mat-label>Assign Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="assign_date" required
+              (dateChange)="assignment.get('assign_date')?.setValue($event.value)" />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="assignment.get('assign_date')?.invalid && assignment.get('assign_date')?.touched">
+              Assign date is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Remark -->
+          <mat-form-field appearance="outline" class="row-field">
+            <mat-label>Remark</mat-label>
+            <input matInput formControlName="assign_remark" />
+          </mat-form-field>
+
+          <!-- Delete Button -->
+          <button mat-icon-button color="warn" (click)="removeAssignment(i)" *ngIf="assignments.length > 1">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+
+        <mat-divider></mat-divider>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button mat-button color="primary" type="button" (click)="addAssignment()">
+        <mat-icon>add</mat-icon> Add Another Asset
+      </button>
+
+      <button mat-raised-button color="primary" type="submit">
+        <mat-icon>send</mat-icon> Assign Assets
+      </button>
+    </div>
+
+  </form>
+</div>

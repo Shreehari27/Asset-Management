@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>Return Asset</h2>
+
+<mat-dialog-content [formGroup]="returnForm">
+  <!-- Return Date -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Return Date</mat-label>
+    <input matInput [matDatepicker]="picker" formControlName="return_date" />
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+
+  <!-- Return Remark -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Return Remark</mat-label>
+    <input matInput formControlName="return_remark" />
+  </mat-form-field>
+
+  <!-- Return To (IT Staff Dropdown) -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Return To (IT Staff)</mat-label>
+    <mat-select formControlName="return_to">
+      <mat-option *ngFor="let it of itStaff" [value]="it.emp_code">
+        {{ it.name }} ({{ it.emp_code }})
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-stroked-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="returnForm.invalid"
+  >
+    Submit
+  </button>
+  <button mat-button mat-dialog-close>Cancel</button>
+</mat-dialog-actions>

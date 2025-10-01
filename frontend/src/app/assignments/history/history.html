@@ -1,0 +1,96 @@
+<h2 class="history-header">Assignment History</h2>
+
+<!-- Search Filters -->
+<div class="filters">
+  <mat-form-field appearance="outline">
+    <mat-label>Asset Type</mat-label>
+    <mat-select [(ngModel)]="filters.asset_type" (selectionChange)="filterAssignments()">
+      <mat-option value="">All</mat-option>
+      <mat-option *ngFor="let type of assetTypes" [value]="type">
+        {{ type }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Brand</mat-label>
+    <input matInput [(ngModel)]="filters.asset_brand" (input)="filterAssignments()" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Serial Number</mat-label>
+    <input matInput [(ngModel)]="filters.serial_number" (input)="filterAssignments()" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Assigned To (Code)</mat-label>
+    <input matInput [(ngModel)]="filters.assigned_to" (input)="filterAssignments()" />
+  </mat-form-field>
+
+  <button mat-stroked-button color="primary" (click)="resetFilter()">Reset</button>
+
+</div>
+
+<!-- Table Wrapper -->
+<div class="table-container mat-elevation-z8">
+  <table mat-table [dataSource]="filteredAssignments" class="full-width-table">
+
+    <!-- Asset Type -->
+    <ng-container matColumnDef="asset_type">
+      <th mat-header-cell *matHeaderCellDef> Asset Type </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.asset_type }} </td>
+    </ng-container>
+
+    <!-- Brand -->
+    <ng-container matColumnDef="asset_brand">
+      <th mat-header-cell *matHeaderCellDef> Brand </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.asset_brand }} </td>
+    </ng-container>
+
+    <!-- Serial Number -->
+    <ng-container matColumnDef="serial_number">
+      <th mat-header-cell *matHeaderCellDef> Serial Number </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.serial_number }} </td>
+    </ng-container>
+
+    <!-- Assigned To -->
+    <ng-container matColumnDef="assigned_to">
+      <th mat-header-cell *matHeaderCellDef> Assigned To </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.emp_code }} </td>
+    </ng-container>
+
+    <!-- Assigned By -->
+    <ng-container matColumnDef="assigned_by">
+      <th mat-header-cell *matHeaderCellDef> Assigned By </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.assigned_by }} </td>
+    </ng-container>
+
+    <!-- Assign Date -->
+    <ng-container matColumnDef="assign_date">
+      <th mat-header-cell *matHeaderCellDef> Assigned On </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.assign_date | date:'mediumDate' }} </td>
+    </ng-container>
+
+    <!-- Return Date -->
+    <ng-container matColumnDef="return_date">
+      <th mat-header-cell *matHeaderCellDef> Returned On </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.return_date | date:'mediumDate' }} </td>
+    </ng-container>
+
+    <!-- Return To -->
+    <ng-container matColumnDef="returned_to">
+      <th mat-header-cell *matHeaderCellDef> Returned To </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.returned_to }} </td>
+    </ng-container>
+
+    <!-- Return Remark -->
+    <ng-container matColumnDef="return_remark">
+      <th mat-header-cell *matHeaderCellDef> Remark </th>
+      <td mat-cell *matCellDef="let assignment"> {{ assignment.return_remark }} </td>
+    </ng-container>
+
+    <!-- Header + Rows -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

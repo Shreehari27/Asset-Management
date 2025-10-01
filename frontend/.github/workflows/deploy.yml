@@ -1,0 +1,65 @@
+name: Deploy to multiple servers
+
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  deploy-server1:
+    runs-on: [self-hosted]  # uses runner labeled 'self-hosted'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Notify Slack – Start
+        run: |
+          payload="{
+            \"text\": \"🟡 *z-assets-server-1-Starting Deployment...*\\n\
+          *Repo:* $GITHUB_REPOSITORY\\n\
+          *Branch:* ${GITHUB_REF#refs/heads/}\"
+          }"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "$payload" \
+            "${{ secrets.SLACK }}"
+
+      - name: Mark directory as safe for Git
+        run: git config --global --add safe.directory /var/www/assets-management-frontend
+      
+      - name: Deploy code
+        env:
+          GITHUB_PAT: ${{ secrets.ACCESS_TOKEN }}   # 👈 add your PAT secret in repo setting fk
+        run: |
+          cd /var/www/assets-management-frontend
+          if [ -d ".git" ]; then
+            git reset --hard
+            git pull origin ${GITHUB_REF#refs/heads/}  # pulls dev dynamically
+          else
+            echo "📥 Cloning repo"
+            git clone -b ${GITHUB_REF#refs/heads/} https://$GITHUB_PAT@github.com/pippintech/assets-management-frontend.git .
+          fi
+
+          # Install dependencies & build
+          npm install
+          npm run build
+
+          # Serve frontend using npx serve via PM2
+          sudo pm2 delete assets-frontend || true
+          npx serve -s dist/frontend -l 3000 &
+          sudo pm2 start "npx serve -s dist/frontend -l 3000" --name "assets-frontend"
+          sudo pm2 save
+
+      - name: Notify Slack – Complete
+        if: always()
+        run: |
+          payload="{
+            \"text\": \"✅ *z-assets-server-1-Deployment Finished*\\n\
+          Repo: $GITHUB_REPOSITORY\\n\
+          Branch: ${GITHUB_REF#refs/heads/}\\n\
+          Status: ${{ job.status }}\"
+          }"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "$payload" \
+            "${{ secrets.SLACK }}"
+    
+
+  

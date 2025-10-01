@@ -1,0 +1,58 @@
+/* Sidebar glassmorphism */
+.sidebar {
+  backdrop-filter: blur(20px);
+  background: rgba(30, 30, 30, 0.6); /* translucent dark */
+  background-clip: border-box;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  padding-top: 8px;
+}
+
+/* Bubble-style nav items */
+a.mat-list-item.bubble {
+  display: flex;
+  align-items: center;     /* center vertically */
+  gap: 8px;               /* restore gap for spacing */
+  border-radius: 16px;
+  margin: 6px 12px;
+  padding: 8px 12px;      /* reduced vertical padding */
+  transition: background 0.3s ease, transform 0.2s ease;
+  justify-content: flex-start; /* align items to start horizontally */
+}
+
+.mat-list-item .mat-icon {
+  color: white;
+  font-size: 28px;
+  line-height: 28px; /* fix vertical alignment */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px; /* add margin to separate icon and text */
+}
+
+.mat-list-item span {
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 28px; /* align with icon */
+}
+
+/* Hover effect */
+a.mat-list-item.bubble:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
+}
+
+/* Icon style */
+.mat-list-item .mat-icon {
+  color: white;
+  font-size: 28px;
+}
+
+/* Text style */
+.mat-list-item span {
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+}

@@ -1,0 +1,125 @@
+Asset Management Components
+Add Asset Component (add-asset.ts)
+Form Inputs:
+
+asset_code (required) - Asset identification code
+serial_number (required) - Hardware serial number
+asset_type (required) - Type of asset (dropdown populated from service)
+asset_brand (required) - Brand/manufacturer (dropdown populated from service)
+status - Defaults to "Available"
+Data Dependencies:
+
+assetTypes[] - Array of available asset types from DropdownService
+assetBrands[] - Array of available brands from DropdownService
+Asset List Component (asset-list.ts)
+Filter Inputs:
+
+serial_number - Text filter for serial numbers
+asset_type - Dropdown filter for asset types
+asset_brand - Text filter for brands
+Data:
+
+assets[] - Array of all assets from AssetService
+filteredAssets[] - Filtered view of assets
+Predefined asset types list for filtering
+Edit Asset Component (edit-asset.ts)
+Route Parameters:
+
+id - Asset ID from URL parameter (used to fetch specific asset)
+Form Inputs:
+
+Same as Add Asset: asset_code, serial_number, asset_type, asset_brand, status
+Employee Management Components
+Add Employee Component (add-employee.ts)
+Form Inputs:
+
+emp_code (required) - Employee code/ID
+name (required) - Employee full name
+email (required) - Email address with validation
+isIT - Boolean flag for IT staff status
+Employee List Component (employee-list.ts)
+Filter Inputs:
+
+searchText - General search across employee fields
+Data:
+
+dataSource[] - Array of employees from EmployeeService
+Edit Employee Component (edit-employee.ts)
+Route Parameters:
+
+id - Employee code from URL parameter
+Form Inputs:
+
+Same as Add Employee: emp_code, name, email, isIT, status
+Assignment Management Components
+Assign Asset Component (assign-asset.ts)
+Selection Inputs:
+
+selectedEmployee - Employee to assign assets to
+assignedBy - IT staff member making the assignment
+Asset Row Inputs (dynamic array):
+
+asset_code - Asset identification code
+asset_type - Type of asset being assigned
+serial_number - Hardware serial number
+brand - Asset brand
+assign_date - Date of assignment
+assign_remark - Assignment notes
+Dropdown Data:
+
+employees[] - All employees from API
+itStaff[] - IT staff members only
+assetCodes[], assetTypes[], serialNumbers[], brands[] - Pre-populated dropdowns
+History Component (history.ts)
+Filter Inputs:
+
+asset_type - Filter by asset type
+asset_brand - Filter by brand
+serial_number - Filter by serial number
+assigned_to - Filter by employee name/code/email
+Data:
+
+assignments[] - Assignment history from AssignmentService
+employees[] - Employee data for filtering
+Return Dialogue Component (return-dialogue.ts)
+Form Inputs:
+
+return_date (required) - Date asset is being returned
+return_remark - Return notes
+return_to (required) - IT staff member receiving the return
+Injected Data:
+
+employees[] - IT staff list passed via dialog data
+Layout & Navigation Components
+Dashboard Component (dashboard.ts)
+No user inputs - Displays static summary data:
+
+totalAssets, assignedAssets, availableAssets, totalEmployees
+Sidebar Component (sidebar.ts)
+No inputs - Static navigation menu with router links
+
+Summary
+Your frontend components primarily take:
+
+Form inputs for creating/editing entities
+Filter/search inputs for data filtering
+Selection inputs for dropdowns and employee/asset selection
+Route parameters for editing specific items
+Service data for populating dropdowns and lists
+The components are well-structured with clear separation between user inputs and service-provided data.
+---------------------------------------------------------------------------------------------------------------------
+
+api details:
+Asset Endpoints (/api/assets)
+GET /api/assets/ - Get all assets
+POST /api/assets/ - Assign assets
+Assignment Endpoints (/api/assignments)
+POST /api/assignments/ - Assign assets to employees
+GET /api/assignments/live - Get live/current assignments
+GET /api/assignments/history - Get assignment history
+PATCH /api/assignments/:id/return - Return an assigned asset
+Employee Endpoints (/api/employees)
+GET /api/employees/ - Get all employees
+GET /api/employees/:emp_code - Get employee by employee code
+POST /api/employees/ - Add new employee
+PATCH /api/employees/:emp_code - Update employee information

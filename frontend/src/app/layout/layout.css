@@ -1,0 +1,109 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  /* Header on top */
+  height: 100vh;
+}
+
+/* Header */
+.header {
+  background-color: #F5F5F5;
+  color: black;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+  width: 100%;
+  padding-left: 16px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.logo {
+  height: 40px;
+  object-fit: contain;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.menu-toggle {
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: baseline; /* Align with sidebar icons baseline */
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  width: 40px;
+  justify-content: center;
+}
+
+.menu-icon {
+  width: 32px;  /* size of your SVG */
+  height: 32px;
+}
+
+.logo {
+  height: 40px;
+  object-fit: contain;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+
+
+/* Sidebar + Content layout */
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #F5F5F5;
+  /* same as header */
+  color: white;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+}
+
+.sidebar a.mat-list-item {
+  color: white;
+}
+
+.sidebar a.mat-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+mat-subheader {
+  color: #e0e0e0;
+}
+
+.content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background: #f5f9ff;
+}
+
+
+.sidebar.collapsed {
+  width: 60px;
+  /* only icons visible */
+}
