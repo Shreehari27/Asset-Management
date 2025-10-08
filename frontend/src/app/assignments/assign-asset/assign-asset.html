@@ -62,6 +62,16 @@
             </mat-error>
           </mat-form-field>
 
+          <!-- Charger Build Number (visible only for Laptops) -->
+            <mat-form-field
+              *ngIf="isLaptop(i)"
+              appearance="outline"
+              class="row-field">
+              <mat-label>Charger Serial Number</mat-label>
+              <input matInput formControlName="charger_serial" placeholder="Enter charger serial number" />
+            </mat-form-field>
+
+
           <!-- Asset Code -->
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Asset Code</mat-label>
