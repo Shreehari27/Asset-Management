@@ -1,19 +1,20 @@
 .scrap-container {
   max-width: 600px;
-  margin: 24px auto;
-  padding: 24px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  margin: 30px auto;
+  padding: 20px;
+}
+
+.full-width {
+  width: 100%;
 }
 
 .asset-card {
-  margin-bottom: 16px;
-  padding: 16px;
-  background: #f5f5f5;
-  border-radius: 6px;
+  margin: 15px 0;
+  padding: 10px;
+  background: #f8f9fa;
 }
-.full-width {
-  width: 100%;
-  margin-bottom: 16px;
+
+.warning {
+  color: red;
+  font-weight: 500;
 }

@@ -38,7 +38,7 @@ BEGIN
         NEW.assign_remark
     );
 
-    UPDATE assets
+    UPDATE assets 
     SET status = 'assigned'
     WHERE asset_code = NEW.asset_code;
 END;
@@ -54,19 +54,67 @@ AFTER DELETE ON assignment_active
 FOR EACH ROW
 BEGIN
     UPDATE assignment_history
-    SET
+    SET 
         return_date = CURRENT_DATE,
         return_remark = 'Returned'
         -- returned_to still set via API when known
-    WHERE
+    WHERE 
         asset_code = OLD.asset_code
         AND emp_code = OLD.emp_code
         AND psd_id = OLD.psd_id
         AND return_date IS NULL;
 
-    UPDATE assets
+    UPDATE assets 
     SET status = 'available'
     WHERE asset_code = OLD.asset_code;
 END;
 //
 DELIMITER ;
+
+-- Scrap Table
+CREATE TABLE asset_scrap (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    asset_code VARCHAR(50) NOT NULL,
+    serial_number VARCHAR(100),
+    asset_type VARCHAR(100),
+    asset_brand VARCHAR(100),
+    scrap_date DATE NOT NULL,
+    scrap_reason TEXT,
+    scrapped_by VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (asset_code) REFERENCES assets(asset_code)
+);
+
+SELECT * FROM assets;
+ALTER TABLE assets 
+MODIFY COLUMN status 
+ENUM('available', 'assigned', 'scrapped', 'repair') 
+DEFAULT 'available';
+select * FROM asset_scrap;
+
+
+-- Laptop Charger
+ALTER TABLE assets
+ADD COLUMN parent_asset_code VARCHAR(20) NULL,
+ADD FOREIGN KEY (parent_asset_code) REFERENCES assets(asset_code);
+
+CREATE TABLE asset_modifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    asset_code VARCHAR(20) NOT NULL,
+    modified_by VARCHAR(20) NOT NULL,
+    modification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modification TEXT NOT NULL,  
+    FOREIGN KEY (asset_code) REFERENCES assets(asset_code),
+    FOREIGN KEY (modified_by) REFERENCES employees(emp_code)
+);
+
+
+
+
+
+
+
+
+
+
+

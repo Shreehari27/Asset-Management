@@ -1,34 +1,64 @@
 <div class="scrap-container">
   <h2>Scrap Asset</h2>
 
+  <!-- ✅ Form should have [formGroup] -->
   <form [formGroup]="scrapForm" (ngSubmit)="submitScrap()">
 
+    <!-- Asset Code -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Asset Code</mat-label>
       <input matInput formControlName="asset_code" (blur)="fetchAsset()" />
+      <mat-error *ngIf="scrapForm.get('asset_code')?.invalid && scrapForm.get('asset_code')?.touched">
+        Asset code is required
+      </mat-error>
     </mat-form-field>
 
+    <!-- Asset Details Card -->
     <mat-card *ngIf="assetDetails" class="asset-card">
       <h3>Asset Details</h3>
       <p><strong>Serial Number:</strong> {{ assetDetails.serial_number }}</p>
       <p><strong>Type:</strong> {{ assetDetails.asset_type }}</p>
       <p><strong>Brand:</strong> {{ assetDetails.asset_brand }}</p>
       <p><strong>Status:</strong> {{ assetDetails.status }}</p>
+      <p *ngIf="!assetValid" class="warning">This asset is not available for scrapping.</p>
     </mat-card>
 
+    <!-- Scrap Date -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Scrap Date</mat-label>
       <input matInput [matDatepicker]="picker" formControlName="scrap_date" />
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="scrapForm.get('scrap_date')?.invalid && scrapForm.get('scrap_date')?.touched">
+        Scrap date is required
+      </mat-error>
     </mat-form-field>
 
+    <!-- Reason -->
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Reason</mat-label>
       <input matInput formControlName="scrap_reason" />
+      <mat-error *ngIf="scrapForm.get('scrap_reason')?.invalid && scrapForm.get('scrap_reason')?.touched">
+        Reason is required
+      </mat-error>
     </mat-form-field>
 
-    <button mat-raised-button color="warn" type="submit" [disabled]="!assetValid">
+    <!-- Scrapped By -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Scrapped By (IT Staff)</mat-label>
+      <mat-select formControlName="scrapped_by" required>
+        <mat-option *ngFor="let it of itPersons" [value]="it.emp_code">
+          {{ it.name }} ({{ it.emp_code }})
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="scrapForm.get('scrapped_by')?.invalid && scrapForm.get('scrapped_by')?.touched">
+        Please select the IT staff who performed scrapping
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Submit -->
+    <button mat-raised-button color="warn" type="submit"
+            [disabled]="!assetValid || scrapForm.invalid">
       Scrap Asset
     </button>
   </form>

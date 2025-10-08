@@ -35,28 +35,27 @@ export const scrapAsset = async (req, res) => {
   const { asset_code, scrap_reason, scrap_date, scrapped_by } = req.body;
 
   try {
-    // 1️⃣ Check asset validity
-    const [assetRows] = await pool.execute(
+    // 1️⃣ Check current status
+    const [check] = await pool.execute(
       "SELECT * FROM assets WHERE asset_code = ?",
       [asset_code]
     );
 
-    if (!assetRows.length) {
+    if (!check.length) {
       return res.status(404).json({ error: "Asset not found" });
     }
 
-    const asset = assetRows[0];
-
-    if (asset.status !== "available") {
+    if (check[0].status !== "available") {
       return res.status(400).json({ error: "Only available assets can be scrapped" });
     }
 
-    // 2️⃣ Insert into asset_scrap table
+    const asset = check[0];
+
+    // 2️⃣ Insert into asset_scrap
     await pool.execute(
-      `INSERT INTO asset_scrap (
-        asset_code, serial_number, asset_type, asset_brand,
-        scrap_date, scrap_reason, scrapped_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO asset_scrap 
+        (asset_code, serial_number, asset_type, asset_brand, scrap_date, scrap_reason, scrapped_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         asset.asset_code,
         asset.serial_number,
@@ -64,7 +63,7 @@ export const scrapAsset = async (req, res) => {
         asset.asset_brand,
         scrap_date || new Date(),
         scrap_reason || null,
-        scrapped_by || "SYSTEM",
+        scrapped_by || "SYSTEM"
       ]
     );
 

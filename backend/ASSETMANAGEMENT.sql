@@ -4,11 +4,11 @@ USE ASSETMANAGEMENT;
 -- Employees Table
 -- ================================
 CREATE TABLE employees (
-    emp_code VARCHAR(20) PRIMARY KEY,          
-    name VARCHAR(100) NOT NULL,                
-    email VARCHAR(100) UNIQUE NOT NULL,        
-    isIT BOOLEAN DEFAULT FALSE,                
-    status ENUM('active','inactive','suspended') DEFAULT 'active',
+    emp_code VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    isIT BOOLEAN DEFAULT FALSE,
+    status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -33,12 +33,15 @@ CREATE TABLE assignment_active (
     id INT AUTO_INCREMENT PRIMARY KEY,
     asset_code VARCHAR(20) NOT NULL,
     emp_code VARCHAR(20) NOT NULL,
-    assigned_by VARCHAR(20) NOT NULL,   -- IT person assigning
+    assigned_by VARCHAR(20) NOT NULL,
     assign_date DATE NOT NULL,
     assign_remark TEXT,
-    FOREIGN KEY (asset_code) REFERENCES assets(asset_code),
-    FOREIGN KEY (emp_code) REFERENCES employees(emp_code),
-    FOREIGN KEY (assigned_by) REFERENCES employees(emp_code)
+    FOREIGN KEY (asset_code)
+        REFERENCES assets (asset_code),
+    FOREIGN KEY (emp_code)
+        REFERENCES employees (emp_code),
+    FOREIGN KEY (assigned_by)
+        REFERENCES employees (emp_code)
 );
 
 -- ================================
@@ -106,28 +109,9 @@ CREATE INDEX idx_history_asset ON assignment_history(asset_code);
 CREATE INDEX idx_history_emp ON assignment_history(emp_code);
 
 
-
-
--- records for my refernece
--- Insert Employees
-INSERT INTO employees (emp_code, name, email, isIT, status) VALUES
-('E001', 'Shreehari',   'shreehari@example.com',   0, 'active'),
-('E002', 'Kanimozhi',   'kanimozhi@example.com',   1, 'active'), -- IT Staff
-('E003', 'Vishwa',      'vishwa@example.com',      0, 'active'),
-('E004', 'Karthikeyan', 'karthikeyan@example.com', 1, 'active'), -- IT Staff
-('E005', 'Padmashri',   'padmashri@example.com',   0, 'active'),
-('E006', 'Barath',      'barath@example.com',      0, 'active'),
-('E007', 'Ashlyn',      'ashlyn@example.com',      0, 'active'),
-('E008', 'Sherlyn',     'sherlyn@example.com',     0, 'active'),
-('E009', 'Vishal',      'vishal@example.com',      0, 'active'),
-('E010', 'Kaushik',     'kaushik@example.com',     1, 'active'); -- IT Staff
-
--- Insert Assets
-INSERT INTO assets (asset_code, serial_number, asset_type, asset_brand, status) VALUES
-('A001', 'SN12345', 'Laptop', 'Dell', 'available'),
-('A002', 'SN67890', 'Monitor', 'HP',  'available'),
-('A003', 'SN54321', 'Keyboard', 'Logitech', 'available');
-
 select * FROM assignment_active;
 select * FROM assignment_history;
+select * from employees;
+select * FROM assets;
+select * from asset_scrap;
 
