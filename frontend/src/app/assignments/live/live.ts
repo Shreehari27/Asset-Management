@@ -10,7 +10,6 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { Assignment } from '../../shared/models/assignment';
 import { AssignmentService } from '../../services/assignment';
 
@@ -18,7 +17,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ReturnDialogComponent } from '../return-dialogue/return-dialogue';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { environment } from '../../../environments/environment';
+import { EmployeeService, Employee } from '../../services/employee';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-live',
@@ -37,7 +37,8 @@ import { environment } from '../../../environments/environment';
     MatDialogModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    RouterModule
+    RouterModule,
+    MatTooltipModule
   ],
   templateUrl: './live.html',
   styleUrls: ['./live.css']
@@ -45,16 +46,18 @@ import { environment } from '../../../environments/environment';
 export class Live implements OnInit {
   assignments: Assignment[] = [];
   filteredAssignments: Assignment[] = [];
-  employees: any[] = [];
-  itEmployees: any[] = []; // IT persons from API
+  employeeMap = new Map<string, Employee>();
+  itEmployees: Employee[] = [];
 
   displayedColumns: string[] = [
+    'assigned_to',
+    'psd_id',
+    'asset_code',
     'asset_type',
     'asset_brand',
     'serial_number',
-    'assigned_to',
-    'assigned_by',
     'assign_date',
+    'assigned_by',
     'assign_remark',
     'actions'
   ];
@@ -66,35 +69,33 @@ export class Live implements OnInit {
     assigned_to: ''
   };
 
-  // Fixed asset type dropdown
   assetTypes: string[] = [
-    'Monitor',
-    'Desktop',
-    'Windows Laptop',
-    'Mac Laptop',
-    'Mouse',
-    'Keyboard',
-    'USB Camera',
-    'WiFi Device',
-    'Headset',
-    'Laptop Bag',
-    'UPS',
-    'Jio/Airtel Modem'
+    'Monitor', 'Desktop', 'Windows Laptop', 'Mac Laptop',
+    'Mouse', 'Keyboard', 'USB Camera', 'WiFi Device',
+    'Headset', 'Laptop Bag', 'UPS', 'Jio/Airtel Modem'
   ];
 
   constructor(
     private assignmentService: AssignmentService,
-    private http: HttpClient,
+    private employeeService: EmployeeService,
     private dialog: MatDialog
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.loadAssignments();
     this.loadEmployees();
-    this.loadITEmployees(); // fetch IT persons from API
+    this.loadAssignments();
+    this.loadITEmployees();
   }
 
-  // Load all live assignments
+  loadEmployees() {
+    this.employeeService.getEmployees().subscribe({
+      next: (data) => {
+        this.employeeMap = new Map(data.map(emp => [emp.emp_code, emp]));
+      },
+      error: err => console.error(err)
+    });
+  }
+
   loadAssignments(): void {
     this.assignmentService.getLiveAssignments().subscribe({
       next: data => {
@@ -105,79 +106,56 @@ export class Live implements OnInit {
     });
   }
 
-  // Load all employees (normal)
-  loadEmployees(): void {
-    this.http.get<any[]>(`${environment.baseUrl}/employees`).subscribe({
-      next: data => this.employees = data,
+  loadITEmployees(): void {
+    this.assignmentService.getITPersons().subscribe({
+      next: data => this.itEmployees = data,
       error: err => console.error(err)
     });
   }
 
-  // Load all employees and filter IT staff
-  loadITEmployees(): void {
-    this.assignmentService.getITPersons().subscribe({
-      next: data => {
-        this.itEmployees = data; // IT employees only
-        console.log('IT Employees loaded:', this.itEmployees);
-      },
-      error: err => console.error('Error loading IT employees:', err)
-    });
-  }
-
-  // Open dialog to return asset
   markReturned(assignment: Assignment): void {
     const dialogRef = this.dialog.open(ReturnDialogComponent, {
       width: '450px',
-      data: {
-        assignment: assignment,
-        employees: this.itEmployees // IT employees only
-      }
+      data: { assignment, employees: this.itEmployees }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // Convert JS Date to MySQL DATETIME string
         const returnDate = new Date(result.return_date);
-        const formattedDate = returnDate.toISOString().slice(0, 19).replace('T', ' '); // YYYY-MM-DD HH:MM:SS
+        const formattedDate = returnDate.toISOString().slice(0, 19).replace('T', ' ');
 
         this.assignmentService.returnAsset({
           asset_code: assignment.asset_code,
           return_date: formattedDate,
           return_remark: result.return_remark,
           return_to: result.return_to
-        }).subscribe({
-          next: () => this.loadAssignments(),
-          error: err => console.error(err)
-        });
+        }).subscribe(() => this.loadAssignments());
       }
     });
   }
 
+  filterAssignments() {
+  this.filteredAssignments = this.assignments.filter(a => {
+    const emp = this.employeeMap.get(a.emp_code);
 
-  // Filter assignments based on search
-  async filterAssignments() {
-    let assignedToEmpCode = '';
+    // Match employee by code, name, or email
+    const matchesEmployee = !this.filters.assigned_to ||
+      a.emp_code.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
+      (emp && (
+        emp.name.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
+        emp.email.toLowerCase().includes(this.filters.assigned_to.toLowerCase())
+      ));
 
-    if (this.filters.assigned_to) {
-      const query = this.filters.assigned_to.toLowerCase();
-      const matched = this.employees.find(emp =>
-        emp.emp_code.toLowerCase() === query || emp.email.toLowerCase() === query
-      );
-      if (matched) assignedToEmpCode = matched.emp_code;
-    }
+    return (
+      (!this.filters.asset_type || a.asset_type.toLowerCase() === this.filters.asset_type.toLowerCase()) &&
+      (!this.filters.asset_brand || a.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase())) &&
+      (!this.filters.serial_number || a.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase())) &&
+      matchesEmployee
+    );
+  });
+}
 
-    this.filteredAssignments = this.assignments.filter(a => {
-      return (!this.filters.asset_type || a.asset_type === this.filters.asset_type)
-        && (!this.filters.asset_brand || a.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase()))
-        && (!this.filters.serial_number || a.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase()))
-        && (!this.filters.assigned_to ||
-          a.emp_code.toLowerCase() === this.filters.assigned_to.toLowerCase() ||
-          a.emp_code.toLowerCase() === assignedToEmpCode.toLowerCase()
-        );
-    });
-  }
 
-  // Reset all filters
   resetFilter() {
     this.filters = { asset_type: '', asset_brand: '', serial_number: '', assigned_to: '' };
     this.filteredAssignments = [...this.assignments];

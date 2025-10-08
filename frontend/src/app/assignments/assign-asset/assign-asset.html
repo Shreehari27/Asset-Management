@@ -5,6 +5,7 @@
 
     <!-- Employee & Assigned By -->
     <div class="row">
+      <!-- Employee -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Select Employee</mat-label>
         <mat-select formControlName="emp_code" required>
@@ -17,6 +18,7 @@
         </mat-error>
       </mat-form-field>
 
+      <!-- Assigned By -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Assigned By (IT Staff)</mat-label>
         <mat-select formControlName="assigned_by" required>
@@ -26,6 +28,17 @@
         </mat-select>
         <mat-error *ngIf="assignmentForm.get('assigned_by')?.invalid && assignmentForm.get('assigned_by')?.touched">
           IT Staff selection is required
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- PSD ID Row -->
+    <div class="row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>PSD ID (Ticket Reference)</mat-label>
+        <input matInput placeholder="Enter PSD / Ticket ID" formControlName="psd_id" required />
+        <mat-error *ngIf="assignmentForm.get('psd_id')?.invalid && assignmentForm.get('psd_id')?.touched">
+          PSD ID is required
         </mat-error>
       </mat-form-field>
     </div>
@@ -114,6 +127,5 @@
         <mat-icon>send</mat-icon> Assign Assets
       </button>
     </div>
-
   </form>
 </div>

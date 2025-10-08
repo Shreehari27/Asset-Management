@@ -10,6 +10,7 @@ import { EditEmployee } from './employees/edit-employee/edit-employee';
 import { AddAsset } from './assets/add-asset/add-asset';
 import { EditAsset } from './assets/edit-asset/edit-asset';
 import { AssignAsset } from './assignments/assign-asset/assign-asset';
+import { ScrapAsset } from './assets/scrap-asset/scrap-asset';
 
 export const routes: Routes = [
   {
@@ -22,6 +23,8 @@ export const routes: Routes = [
       { path: 'assets', component: AssetList },
       //{ path: 'assets/add', component: AddAsset },
       { path: 'assets/edit/:id', component: EditAsset },
+      { path: 'assignments/scrap', component: ScrapAsset },
+
 
       // Employees
       { path: 'employees', component: EmployeeListComponent },

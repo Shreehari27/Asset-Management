@@ -1,0 +1,35 @@
+<div class="scrap-container">
+  <h2>Scrap Asset</h2>
+
+  <form [formGroup]="scrapForm" (ngSubmit)="submitScrap()">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Asset Code</mat-label>
+      <input matInput formControlName="asset_code" (blur)="fetchAsset()" />
+    </mat-form-field>
+
+    <mat-card *ngIf="assetDetails" class="asset-card">
+      <h3>Asset Details</h3>
+      <p><strong>Serial Number:</strong> {{ assetDetails.serial_number }}</p>
+      <p><strong>Type:</strong> {{ assetDetails.asset_type }}</p>
+      <p><strong>Brand:</strong> {{ assetDetails.asset_brand }}</p>
+      <p><strong>Status:</strong> {{ assetDetails.status }}</p>
+    </mat-card>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Scrap Date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="scrap_date" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Reason</mat-label>
+      <input matInput formControlName="scrap_reason" />
+    </mat-form-field>
+
+    <button mat-raised-button color="warn" type="submit" [disabled]="!assetValid">
+      Scrap Asset
+    </button>
+  </form>
+</div>
