@@ -1,125 +1,146 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-
-import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
+import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
-
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { ScrapDialogComponent } from '../scrap-dialogue/scrap-dialogue';
+import { AssignmentService } from '../../services/assignment';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @Component({
   selector: 'app-scrap-asset',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    HttpClientModule,
+    FormsModule,
+    MatTableModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatTooltipModule,
     MatDatepickerModule,
-    MatNativeDateModule,
-    MatCardModule,
-    MatSelectModule
+    MatNativeDateModule
   ],
   templateUrl: './scrap-asset.html',
   styleUrls: ['./scrap-asset.css']
 })
 export class ScrapAsset implements OnInit {
-  scrapForm!: FormGroup;
-  assetDetails: any = null;
-  assetValid = false;
-  itPersons: any[] = [];
+  assets: any[] = [];
+  filteredAssets: any[] = [];
+  displayedColumns: string[] = ['asset_code', 'serial_number', 'asset_type', 'status', 'actions'];
+  itEmployees: any[] = [];
 
-  private apiBase = environment.baseUrl; 
+  assetTypes: string[] = [
+    'Monitor',
+    'Desktop',
+    'Windows Laptop',
+    'Mac Laptop',
+    'Wireless Mouse',
+    'Wireless Keyboard',
+    'Mini Desktop',
+    'USB splitter/Extension',
+    'Laptop Charger',
+    'Mouse',
+    'Keyboard',
+    'USB Camera',
+    'WiFi Device',
+    'Headset',
+    'Laptop Bag',
+    'UPS',
+    'Jio/Airtel Modem'
+  ];
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {}
+  filters = {
+    asset_code: '',
+    serial_number: '',
+    asset_type: ''
+  };
 
-  ngOnInit(): void {
-    this.scrapForm = this.fb.group({
-      asset_code: ['', Validators.required],
-      scrap_date: [new Date(), Validators.required],
-      scrap_reason: ['', Validators.required],
-      scrapped_by: ['', Validators.required]
-    });
+  constructor(private http: HttpClient, private dialog: MatDialog, private assignmentService: AssignmentService) { }
 
+  ngOnInit() {
     this.loadITEmployees();
+    this.loadAssets();
   }
 
-  loadITEmployees(): void {
-    this.http.get(`${this.apiBase}/employees/ITR`).subscribe({
-      next: (res: any) => this.itPersons = res || [],
-      error: (err) => {
-        console.error('Failed to load IT employees', err);
-        this.itPersons = [];
-      }
+  loadITEmployees() {
+    this.assignmentService.getITPersons().subscribe({
+      next: data => this.itEmployees = data,
+      error: err => console.error(err)
     });
   }
 
-  fetchAsset(): void {
-    const code = this.scrapForm.value.asset_code?.trim();
-    if (!code) {
-      this.assetDetails = null;
-      this.assetValid = false;
-      return;
-    }
-
-    this.http.get(`${this.apiBase}/scrap/details/${encodeURIComponent(code)}`).subscribe({
-      next: (res: any) => {
-        console.log('Fetched Asset:', res);
-        this.assetDetails = res;
-        this.assetValid = res?.status?.toLowerCase() === 'available';
-        if (!this.assetValid) alert('Asset is not available for scrapping');
+  loadAssets() {
+    this.http.get<any[]>(`${environment.baseUrl}/assets`).subscribe({
+      next: res => {
+        this.assets = res.filter(asset => asset.status !== 'scrapped' && asset.status !== 'assigned');
+        this.filteredAssets = [...this.assets];
       },
-      error: (err) => {
-        console.error('Asset lookup failed', err);
-        this.assetDetails = null;
-        this.assetValid = false;
-        alert('Asset not found');
-      }
+      error: err => console.error(err)
     });
   }
 
-  submitScrap(): void {
-    console.log('🟢 Scrap button clicked');
+  // Filter assets automatically as user types/selects
+  applyFilter() {
+    const code = this.filters.asset_code.toLowerCase();
+    const serial = this.filters.serial_number.toLowerCase();
+    const type = this.filters.asset_type.toLowerCase();
 
-    if (this.scrapForm.invalid || !this.assetValid) {
-      alert('Please enter valid asset details and ensure the asset is available.');
-      return;
-    }
+    this.filteredAssets = this.assets.filter(asset =>
+      asset.asset_code.toLowerCase().includes(code) &&
+      asset.serial_number.toLowerCase().includes(serial) &&
+      asset.asset_type.toLowerCase().includes(type)
+    );
+  }
 
-    const form = this.scrapForm.value;
-    const payload = {
-      asset_code: form.asset_code.trim(),
-      scrap_date: new Date(form.scrap_date).toISOString().slice(0, 10),
-      scrap_reason: form.scrap_reason,
-      scrapped_by: form.scrapped_by
-    };
+  resetFilter() {
+    this.filters = { asset_code: '', serial_number: '', asset_type: '' };
+    this.filteredAssets = [...this.assets];
+  }
 
-    console.log('Submitting Payload:', payload);
+  // Format date for MySQL
+  formatForMySQL(date: Date | string) {
+    const d = new Date(date);
+    return d.toISOString().slice(0, 19).replace('T', ' ');
+  }
 
-    this.http.post(`${this.apiBase}/scrap`, payload).subscribe({
-      next: (res: any) => {
-        alert(`✅ Asset ${payload.asset_code} scrapped successfully`);
-        this.scrapForm.reset({
-          asset_code: '',
-          scrap_date: new Date(),
-          scrap_reason: '',
-          scrapped_by: ''
+  openScrapDialog(asset: any) {
+    const dialogRef = this.dialog.open(ScrapDialogComponent, {
+      width: '450px',
+      data: { asset, employees: this.itEmployees }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const payload = {
+          asset_code: asset.asset_code,
+          scrap_date: this.formatForMySQL(result.scrap_date || new Date()),
+          scrap_reason: result.scrap_reason || '',
+          scrapped_by: result.scrapped_by || 'SYSTEM'
+        };
+
+        this.http.post(`${environment.baseUrl}/scrap`, payload).subscribe({
+          next: () => {
+            alert('Asset scrapped successfully!');
+            this.loadAssets();
+          },
+          error: err => {
+            console.error('Error scrapping asset:', err);
+            alert(err.error?.error || 'Failed to scrap asset');
+          }
         });
-        this.assetDetails = null;
-        this.assetValid = false;
-      },
-      error: (err) => {
-        console.error('Failed to scrap asset', err);
-        const msg = err?.error?.error || err?.error?.message;
-        alert(`❌ Failed to scrap asset: ${msg || 'Server error'}`);
       }
     });
   }

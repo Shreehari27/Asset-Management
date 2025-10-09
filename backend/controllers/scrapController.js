@@ -51,7 +51,11 @@ export const scrapAsset = async (req, res) => {
 
     const asset = check[0];
 
-    // 2️⃣ Insert into asset_scrap
+    // 2️⃣ Format scrap_date for MySQL
+    const date = scrap_date ? new Date(scrap_date) : new Date();
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+
+    // 3️⃣ Insert into asset_scrap
     await pool.execute(
       `INSERT INTO asset_scrap 
         (asset_code, serial_number, asset_type, asset_brand, scrap_date, scrap_reason, scrapped_by)
@@ -61,13 +65,13 @@ export const scrapAsset = async (req, res) => {
         asset.serial_number,
         asset.asset_type,
         asset.asset_brand,
-        scrap_date || new Date(),
+        formattedDate,
         scrap_reason || null,
         scrapped_by || "SYSTEM"
       ]
     );
 
-    // 3️⃣ Update asset status → scrapped
+    // 4️⃣ Update asset status → scrapped
     await pool.execute(
       "UPDATE assets SET status = 'scrapped', updated_at = NOW() WHERE asset_code = ?",
       [asset_code]

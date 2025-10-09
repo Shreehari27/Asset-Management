@@ -1,20 +1,38 @@
-.scrap-container {
-  max-width: 600px;
-  margin: 30px auto;
-  padding: 20px;
+/* Filters container */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* space between each filter and button */
+  margin-bottom: 20px;
+  align-items: center; /* vertically center inputs and button */
 }
 
-.full-width {
-  width: 100%;
+/* Individual filter fields */
+.filters mat-form-field {
+  width: 250px;
+  min-width: 250px;
+  height: 56px;
 }
 
-.asset-card {
-  margin: 15px 0;
-  padding: 10px;
-  background: #f8f9fa;
+/* Reset button */
+.filters button {
+  height: 56px; /* same height as form fields */
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: none;
+  padding: 0 20px;
+  border: 1px solid #1976d2;
+  color: #1976d2;
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
 
-.warning {
-  color: red;
-  font-weight: 500;
+.filters button:hover {
+  background-color: #1976d2;
+  color: #fff;
 }
