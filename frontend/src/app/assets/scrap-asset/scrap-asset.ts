@@ -39,7 +39,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 export class ScrapAsset implements OnInit {
   assets: any[] = [];
   filteredAssets: any[] = [];
-  displayedColumns: string[] = ['asset_code', 'serial_number', 'asset_type', 'status', 'actions'];
+  displayedColumns: string[] = ['asset_code', 'serial_number', 'asset_type', 'asset_brand', 'status', 'actions'];
   itEmployees: any[] = [];
 
   assetTypes: string[] = [
@@ -65,7 +65,8 @@ export class ScrapAsset implements OnInit {
   filters = {
     asset_code: '',
     serial_number: '',
-    asset_type: ''
+    asset_type: '',
+    asset_brand: ''
   };
 
   constructor(private http: HttpClient, private dialog: MatDialog, private assignmentService: AssignmentService) { }
@@ -97,16 +98,18 @@ export class ScrapAsset implements OnInit {
     const code = this.filters.asset_code.toLowerCase();
     const serial = this.filters.serial_number.toLowerCase();
     const type = this.filters.asset_type.toLowerCase();
+    const brand = this.filters.asset_brand.toLowerCase();
 
     this.filteredAssets = this.assets.filter(asset =>
       asset.asset_code.toLowerCase().includes(code) &&
       asset.serial_number.toLowerCase().includes(serial) &&
-      asset.asset_type.toLowerCase().includes(type)
+      asset.asset_type.toLowerCase().includes(type) &&
+      asset.asset_brand.toLowerCase().includes(brand)
     );
   }
 
   resetFilter() {
-    this.filters = { asset_code: '', serial_number: '', asset_type: '' };
+    this.filters = { asset_code: '', serial_number: '', asset_type: '', asset_brand: '' };
     this.filteredAssets = [...this.assets];
   }
 
