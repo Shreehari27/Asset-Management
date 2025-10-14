@@ -8,10 +8,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
-import { RouterModule } from '@angular/router';
-import { Asset } from '../../shared/models/asset';
-import { AssetService } from '../../services/asset';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Asset } from '../../shared/models/asset';
+import { AssetService } from '../../services/Sharedasset';
 
 @Component({
   selector: 'app-asset-list',
@@ -49,19 +49,19 @@ export class AssetList implements OnInit {
   assetTypes: string[] = [
     'Monitor',
     'Desktop',
-    'Windows laptop',
-    'Mac laptop',
+    'Windows Laptop',
+    'Mac Laptop',
     'Mouse',
     'Keyboard',
-    'Usb camera',
-    'Wifi device',
+    'Usb Camera',
+    'Wifi Device',
     'Headset',
     'Laptop Bag',
     'UPS',
-    'Jio/Airtel Modemn'
+    'Jio/Airtel Modem'
   ];
 
-  constructor(private assetService: AssetService) { }
+  constructor(private assetService: AssetService, private router: Router) { }
 
   ngOnInit(): void {
     this.loadAssets();
@@ -73,9 +73,7 @@ export class AssetList implements OnInit {
         this.assets = data;
         this.filteredAssets = [...data];
       },
-      error: (err) => {
-        console.error('Error fetching assets:', err);
-      }
+      error: (err) => console.error('Error fetching assets:', err)
     });
   }
 
@@ -83,7 +81,7 @@ export class AssetList implements OnInit {
     this.filteredAssets = this.assets.filter(asset =>
       (!this.filters.serial_number || asset.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase())) &&
       (!this.filters.asset_type || asset.asset_type.toLowerCase() === this.filters.asset_type.toLowerCase()) &&
-      (!this.filters.asset_brand || asset.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase())) &&
+      (!this.filters.asset_brand || (asset.asset_brand && asset.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase()))) &&
       (!this.filters.status || asset.status?.toLowerCase() === this.filters.status.toLowerCase())
     );
   }
@@ -91,5 +89,10 @@ export class AssetList implements OnInit {
   resetFilters(): void {
     this.filters = { serial_number: '', asset_type: '', asset_brand: '', status: '' };
     this.filteredAssets = [...this.assets];
+  }
+
+  /** Redirect to Add Asset Component */
+  addAsset(): void {
+    this.router.navigate(['/assets/add']);
   }
 }

@@ -3,81 +3,43 @@
   padding: 20px;
 }
 
-/* Center the heading and set color */
+/* Center the heading */
 .container h2 {
   text-align: center;
   color: #037fb4;
-  margin-bottom: 24px;
-  font-weight: 500;
+  margin-bottom: 16px;
 }
 
-/* Search / filter section */
+/* Add Asset button container */
+.add-asset-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.add-asset-btn-container button {
+  background-color: #037fb4;
+  color: white;
+  text-transform: none;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 4px;
+}
+
+/* Search container */
 .search-container {
   display: flex;
-  flex-wrap: nowrap;
   gap: 16px;
-  align-items: stretch; /* Changed from center to stretch for better alignment */
-  margin-top: 24px; /* Add spacing between heading and filter bar */
-  margin-bottom: 24px;
-  overflow-x: auto;
-  padding-bottom: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-/* Make mat-form-fields consistent width and height */
 .search-container mat-form-field {
-  flex: 0 0 250px;
   min-width: 200px;
-  height: 72px; /* Increased height to accommodate labels and input area */
-  box-sizing: border-box; /* Include padding in height calculation */
+  flex: 1;
 }
 
-/* Fix mat-label visibility issues - ensure labels are fully visible */
-.search-container mat-form-field {
-  position: relative;
-}
-
-.search-container mat-form-field .mat-mdc-form-field-label {
-  position: absolute !important;
-  top: -8px !important;
-  left: 12px !important;
-  background: white !important;
-  padding: 0 4px !important;
-  z-index: 10 !important;
-  font-size: 12px !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  white-space: nowrap !important;
-  overflow: visible !important;
-}
-
-/* Ensure mat-form-field has proper height to accommodate labels */
-.search-container mat-form-field {
-  padding-top: 16px;
-}
-
-/* Fix for mat-form-field outline appearance */
-.search-container mat-form-field.mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline {
-  top: 0;
-}
-
-/* Reset button styling */
-.search-container button {
-  height: 56px; /* match mat-form-field height */
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box; /* Include padding in height calculation */
-}
-
-/* Optional: ensure horizontal scrolling on small screens */
-.search-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.search-container::-webkit-scrollbar-thumb {
-  background-color: rgba(0,0,0,0.2);
-  border-radius: 3px;
+/* Table styling */
+table {
+  width: 100%;
 }

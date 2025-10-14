@@ -1,16 +1,27 @@
-.asset-form-container {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 16px;
+.container {
+  padding: 20px;
 }
 
-.full-width {
-  width: 100%;
+.container h2 {
+  text-align: center;
+  color: #037fb4;
   margin-bottom: 16px;
 }
 
-.form-actions {
+.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.full-width {
+  flex: 1;
+  min-width: 200px;
+}
+
+.actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 16px;
 }

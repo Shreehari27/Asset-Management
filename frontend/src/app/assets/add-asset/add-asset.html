@@ -1,109 +1,66 @@
-<!-----------------------
+<div class="container">
+  <h2>Add New Asset</h2>
 
-
-<h2>Add Asset</h2>
-<mat-card>
-  <mat-card-title>Add Asset</mat-card-title>
-  <mat-card-content>
-    <form [formGroup]="form" (ngSubmit)="submit()" class="asset-form-container">
-
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="row">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Asset Code</mat-label>
-        <input matInput formControlName="asset_code" />
+        <input matInput formControlName="asset_code" (blur)="onAssetCodeBlur()" required />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Serial Number</mat-label>
-        <input matInput formControlName="serial_number" />
+        <input matInput formControlName="serial_number" required />
       </mat-form-field>
+    </div>
 
+    <div class="row">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Type</mat-label>
-        <mat-select formControlName="asset_type">
+        <mat-label>Asset Type</mat-label>
+        <mat-select formControlName="asset_type" required>
           <mat-option *ngFor="let t of assetTypes" [value]="t">{{ t }}</mat-option>
         </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Brand</mat-label>
-        <mat-select formControlName="asset_brand">
-          <mat-option *ngFor="let b of assetBrands" [value]="b">{{ b }}</mat-option>
-        </mat-select>
+        <input matInput formControlName="asset_brand" required />
       </mat-form-field>
+    </div>
 
-      <div class="form-actions">
-        <button mat-raised-button color="primary" type="submit">Save</button>
-        <button mat-button color="warn" type="button" (click)="cancel()">Cancel</button>
-      </div>
-    </form>
-  </mat-card-content>
-</mat-card>
-
-
------------------------>
-
-
-<div class="add-asset-container">
-  <mat-card>
-    <h2>Add New Asset</h2>
-
-    <form [formGroup]="form" (ngSubmit)="submit()">
-
-      <!-- Asset Type Dropdown -->
+    <div class="row" *ngIf="isLaptopOrDesktop()">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Asset Type</mat-label>
-        <mat-select formControlName="asset_type">
-          <mat-option *ngFor="let type of assetTypes" [value]="type">
-            {{ type }}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="form.get('asset_type')?.hasError('required')">
-          Asset Type is required
-        </mat-error>
+        <mat-label>Processor</mat-label>
+        <input matInput formControlName="processor" placeholder="e.g. Intel i5 / Ryzen 7" />
       </mat-form-field>
+    </div>
 
-      <!-- Asset Code -->
+    <div class="row" *ngIf="hasCharger()">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Asset Code</mat-label>
-        <input matInput formControlName="asset_code" placeholder="Enter Asset Code" />
-        <mat-error *ngIf="form.get('asset_code')?.hasError('required')">
-          Asset Code is required
-        </mat-error>
+        <mat-label>Charger Serial Number</mat-label>
+        <input matInput formControlName="charger_serial" placeholder="Enter charger serial number" />
       </mat-form-field>
+    </div>
 
-      <!-- Serial Number -->
+    <div class="row">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Serial Number</mat-label>
-        <input matInput formControlName="serial_number" placeholder="Enter Serial Number" />
-        <mat-error *ngIf="form.get('serial_number')?.hasError('required')">
-          Serial Number is required
-        </mat-error>
+        <mat-label>Warranty Start</mat-label>
+        <input matInput [matDatepicker]="ws" formControlName="warranty_start" />
+        <mat-datepicker-toggle matSuffix [for]="ws"></mat-datepicker-toggle>
+        <mat-datepicker #ws></mat-datepicker>
       </mat-form-field>
 
-      <!-- Asset Brand Dropdown -->
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Asset Brand</mat-label>
-        <mat-select formControlName="asset_brand">
-          <mat-option *ngFor="let brand of assetBrands" [value]="brand">
-            {{ brand }}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="form.get('asset_brand')?.hasError('required')">
-          Asset Brand is required
-        </mat-error>
+        <mat-label>Warranty End</mat-label>
+        <input matInput [matDatepicker]="we" formControlName="warranty_end" />
+        <mat-datepicker-toggle matSuffix [for]="we"></mat-datepicker-toggle>
+        <mat-datepicker #we></mat-datepicker>
       </mat-form-field>
+    </div>
 
-      <!-- Buttons -->
-      <div class="actions">
-        <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
-          <mat-icon>save</mat-icon>
-          Save Asset
-        </button>
-        <button mat-button color="warn" type="button" (click)="cancel()">
-          <mat-icon>cancel</mat-icon>
-          Cancel
-        </button>
-      </div>
-    </form>
-  </mat-card>
+    <div class="actions">
+      <button mat-raised-button color="primary" type="submit">Add Asset</button>
+      <button mat-raised-button color="warn" type="button" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
 </div>

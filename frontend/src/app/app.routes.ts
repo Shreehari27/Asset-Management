@@ -21,7 +21,7 @@ export const routes: Routes = [
 
       // Assets
       { path: 'assets', component: AssetList },
-      //{ path: 'assets/add', component: AddAsset },
+      { path: 'assets/add', component: AddAsset },
       { path: 'assets/edit/:id', component: EditAsset },
       { path: 'assignments/scrap', component: ScrapAsset },
 

@@ -1,6 +1,11 @@
 <div class="container">
   <h2>All Assets</h2>
 
+  <!-- 🔹 Add Asset Button -->
+  <div class="add-asset-btn-container">
+    <button mat-raised-button (click)="addAsset()">Add New Asset</button>
+  </div>
+
   <!-- 🔍 Search Bar -->
   <div class="search-container">
     <mat-form-field appearance="outline">
@@ -8,7 +13,6 @@
       <input matInput [(ngModel)]="filters.serial_number" (input)="applyFilters()" />
     </mat-form-field>
 
-    <!-- Asset Type Dropdown -->
     <mat-form-field appearance="outline">
       <mat-label>Filter by Asset Type</mat-label>
       <mat-select [(ngModel)]="filters.asset_type" (selectionChange)="applyFilters()">
@@ -17,13 +21,11 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- Brand Search -->
     <mat-form-field appearance="outline">
       <mat-label>Search by Brand</mat-label>
       <input matInput [(ngModel)]="filters.asset_brand" (input)="applyFilters()" />
     </mat-form-field>
 
-    <!-- Status Dropdown -->
     <mat-form-field appearance="outline">
       <mat-label>Filter by Status</mat-label>
       <mat-select [(ngModel)]="filters.status" (selectionChange)="applyFilters()">
@@ -40,37 +42,31 @@
   <!-- Assets Table -->
   <table mat-table [dataSource]="filteredAssets" class="mat-elevation-z8">
 
-    <!-- Asset Code Column -->
     <ng-container matColumnDef="asset_code">
       <th mat-header-cell *matHeaderCellDef> Asset Code </th>
       <td mat-cell *matCellDef="let asset"> {{ asset.asset_code }} </td>
     </ng-container>
 
-    <!-- Serial Number Column -->
     <ng-container matColumnDef="serial_number">
       <th mat-header-cell *matHeaderCellDef> Serial Number </th>
       <td mat-cell *matCellDef="let asset"> {{ asset.serial_number }} </td>
     </ng-container>
 
-    <!-- Asset Type Column -->
     <ng-container matColumnDef="asset_type">
       <th mat-header-cell *matHeaderCellDef> Asset Type </th>
       <td mat-cell *matCellDef="let asset"> {{ asset.asset_type }} </td>
     </ng-container>
 
-    <!-- Asset Brand Column -->
     <ng-container matColumnDef="asset_brand">
       <th mat-header-cell *matHeaderCellDef> Asset Brand </th>
       <td mat-cell *matCellDef="let asset"> {{ asset.asset_brand }} </td>
     </ng-container>
 
-    <!-- Status Column -->
     <ng-container matColumnDef="status">
       <th mat-header-cell *matHeaderCellDef> Status </th>
       <td mat-cell *matCellDef="let asset"> {{ asset.status }} </td>
     </ng-container>
 
-    <!-- Display all columns -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>

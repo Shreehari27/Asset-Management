@@ -109,6 +109,79 @@ CREATE INDEX idx_history_asset ON assignment_history(asset_code);
 CREATE INDEX idx_history_emp ON assignment_history(emp_code);
 
 
+-- Modify status to include 'ready_to_be_assigned'
+ALTER TABLE assets 
+MODIFY COLUMN status 
+ENUM('available', 'ready_to_be_assigned', 'assigned', 'scrapped', 'repair', 'retired') 
+DEFAULT 'available';
+
+ALTER TABLE assets
+ADD COLUMN warranty_start DATE NULL AFTER asset_brand,
+ADD COLUMN warranty_end DATE NULL AFTER warranty_start,
+ADD COLUMN warranty_status ENUM('active', 'expired', 'unknown') DEFAULT 'unknown' AFTER warranty_end;
+
+ALTER TABLE assets
+ADD COLUMN processor VARCHAR(100) NULL AFTER asset_brand;
+
+--   =========================
+DELIMITER //
+
+CREATE TRIGGER trg_update_warranty_status
+BEFORE INSERT ON assets
+FOR EACH ROW
+BEGIN
+    IF NEW.warranty_start IS NOT NULL AND NEW.warranty_end IS NOT NULL THEN
+        IF CURDATE() BETWEEN NEW.warranty_start AND NEW.warranty_end THEN
+            SET NEW.warranty_status = 'active';
+        ELSE
+            SET NEW.warranty_status = 'expired';
+        END IF;
+    ELSE
+        SET NEW.warranty_status = 'unknown';
+    END IF;
+END;
+//
+DELIMITER ;
+-- ================================
+DELIMITER //
+
+CREATE TRIGGER trg_update_warranty_status_on_update
+BEFORE UPDATE ON assets
+FOR EACH ROW
+BEGIN
+    IF NEW.warranty_start IS NOT NULL AND NEW.warranty_end IS NOT NULL THEN
+        IF CURDATE() BETWEEN NEW.warranty_start AND NEW.warranty_end THEN
+            SET NEW.warranty_status = 'active';
+        ELSE
+            SET NEW.warranty_status = 'expired';
+        END IF;
+    ELSE
+        SET NEW.warranty_status = 'unknown';
+    END IF;
+END;
+//
+DELIMITER ;
+-- ========================================
+SET GLOBAL event_scheduler = ON;
+
+CREATE EVENT update_warranty_status_daily
+ON SCHEDULE EVERY 1 DAY
+DO
+    UPDATE assets
+    SET warranty_status = 
+        CASE 
+            WHEN warranty_start IS NOT NULL AND warranty_end IS NOT NULL 
+                 AND CURDATE() BETWEEN warranty_start AND warranty_end THEN 'active'
+            WHEN warranty_start IS NOT NULL AND warranty_end IS NOT NULL 
+                 AND CURDATE() > warranty_end THEN 'expired'
+            ELSE 'unknown'
+        END;
+-- =============================
+
+
+
+
+
 select * FROM assignment_active;
 select * FROM assignment_history;
 select * from employees;

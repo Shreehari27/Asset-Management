@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { Asset } from '../../shared/models/asset';
-import { AssetService } from '../../services/asset';
+import { AssetService } from '../../services/Sharedasset';
 import { DropdownService } from '../../services/dropdown';
 
 @Component({
@@ -59,8 +59,10 @@ export class EditAsset implements OnInit {
 
   loadAsset(): void {
     this.assetService.getAssetByCode(this.assetId).subscribe({
-      next: (asset: Asset) => {
-        this.assetForm.patchValue(asset);
+      next: (asset: Asset | null) => {
+        if (asset) {
+          this.assetForm.patchValue(asset);
+        }
       },
       error: (err: any) => console.error('Error loading asset', err)
     });

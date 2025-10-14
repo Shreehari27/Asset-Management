@@ -3,13 +3,12 @@
   padding: 24px;
   border-radius: 8px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-  max-width: 900px;
+  max-width: 950px;
   margin: 24px auto;
 }
 
 h2 {
   color: #0d47a1;
-  /* Dark Blue */
   margin-bottom: 20px;
   font-weight: 600;
 }
@@ -19,6 +18,7 @@ h2 {
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 16px;
+  align-items: flex-end;
 }
 
 .full-width {
@@ -27,7 +27,7 @@ h2 {
 
 .row-field {
   flex: 1 1 calc(33% - 12px);
-  min-width: 150px;
+  min-width: 200px;
 }
 
 .assignment-row {
@@ -40,23 +40,4 @@ h2 {
   gap: 16px;
   margin-top: 20px;
   justify-content: flex-end;
-}
-
-
-.row {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  align-items: flex-end;
-  /* ✅ keeps delete button aligned with fields */
-}
-
-.row-field {
-  flex: 1 1 calc(33% - 12px);
-  min-width: 200px;
-}
-
-.row + .row {
-  margin-top: 10px;
 }

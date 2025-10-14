@@ -64,9 +64,11 @@ BEGIN
         AND psd_id = OLD.psd_id
         AND return_date IS NULL;
 
-    UPDATE assets 
-    SET status = 'available'
-    WHERE asset_code = OLD.asset_code;
+UPDATE assets 
+SET 
+    status = 'available'
+WHERE
+    asset_code = OLD.asset_code;
 END;
 //
 DELIMITER ;
@@ -82,7 +84,8 @@ CREATE TABLE asset_scrap (
     scrap_reason TEXT,
     scrapped_by VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (asset_code) REFERENCES assets(asset_code)
+    FOREIGN KEY (asset_code)
+        REFERENCES assets (asset_code)
 );
 
 SELECT * FROM assets;
