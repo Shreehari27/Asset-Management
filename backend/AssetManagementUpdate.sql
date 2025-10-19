@@ -106,10 +106,71 @@ CREATE TABLE asset_modifications (
     asset_code VARCHAR(20) NOT NULL,
     modified_by VARCHAR(20) NOT NULL,
     modification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    modification TEXT NOT NULL,  
-    FOREIGN KEY (asset_code) REFERENCES assets(asset_code),
-    FOREIGN KEY (modified_by) REFERENCES employees(emp_code)
+    modification TEXT NOT NULL,
+    FOREIGN KEY (asset_code)
+        REFERENCES assets (asset_code),
+    FOREIGN KEY (modified_by)
+        REFERENCES employees (emp_code)
 );
+
+
+-- correction
+DROP TRIGGER IF EXISTS trg_update_warranty_status;
+DROP TRIGGER IF EXISTS trg_update_warranty_status_on_update;
+
+DELIMITER //
+
+CREATE TRIGGER trg_update_warranty_status
+BEFORE INSERT ON assets
+FOR EACH ROW
+BEGIN
+    IF NEW.warranty_start IS NULL OR NEW.warranty_end IS NULL THEN
+        SET NEW.warranty_status = 'unknown';
+    ELSEIF CURDATE() < NEW.warranty_start THEN
+        SET NEW.warranty_status = 'unknown'; -- warranty not started yet
+    ELSEIF CURDATE() BETWEEN NEW.warranty_start AND NEW.warranty_end THEN
+        SET NEW.warranty_status = 'active';
+    ELSE
+        SET NEW.warranty_status = 'expired';
+    END IF;
+END;
+//
+
+CREATE TRIGGER trg_update_warranty_status_on_update
+BEFORE UPDATE ON assets
+FOR EACH ROW
+BEGIN
+    IF NEW.warranty_start IS NULL OR NEW.warranty_end IS NULL THEN
+        SET NEW.warranty_status = 'unknown';
+    ELSEIF CURDATE() < NEW.warranty_start THEN
+        SET NEW.warranty_status = 'unknown';
+    ELSEIF CURDATE() BETWEEN NEW.warranty_start AND NEW.warranty_end THEN
+        SET NEW.warranty_status = 'active';
+    ELSE
+        SET NEW.warranty_status = 'expired';
+    END IF;
+END;
+//
+DELIMITER ;
+
+DROP EVENT IF EXISTS update_warranty_status_daily;
+
+CREATE EVENT update_warranty_status_daily
+ON SCHEDULE EVERY 1 DAY
+DO
+    UPDATE assets
+    SET warranty_status = 
+        CASE
+            WHEN warranty_start IS NULL OR warranty_end IS NULL THEN 'unknown'
+            WHEN CURDATE() < warranty_start THEN 'unknown'
+            WHEN CURDATE() BETWEEN warranty_start AND warranty_end THEN 'active'
+            WHEN CURDATE() > warranty_end THEN 'expired'
+            ELSE 'unknown'
+        END;
+        
+
+
+
 
 
 

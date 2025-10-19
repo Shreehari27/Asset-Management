@@ -136,6 +136,7 @@ export class AssignAsset implements OnInit {
             asset_type: asset.asset_type,
             asset_brand: asset.asset_brand,
             processor: asset.processor,
+            charger_serial: asset.charger_serial || '', // ✅ NEW LINE
             warranty_start: asset.warranty_start,
             warranty_end: asset.warranty_end,
             isNew: false

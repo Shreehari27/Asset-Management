@@ -11,10 +11,12 @@ export const getAssets = async (req, res) => {
   }
 };
 
-// ➤ Get single asset by code
+// ➤ Get single asset by code (with charger info if applicable)
 export const getAssetByCode = async (req, res) => {
   try {
     const { code } = req.params;
+
+    // Fetch main asset
     const [rows] = await pool.query(
       "SELECT * FROM assets WHERE asset_code = ?",
       [code]
@@ -24,12 +26,35 @@ export const getAssetByCode = async (req, res) => {
       return res.status(200).json(null); // return null for new asset
     }
 
-    res.json(rows[0]);
+    const asset = rows[0];
+
+    // If it's laptop or mini desktop, try fetching linked charger
+    if (
+      asset.asset_type &&
+      (asset.asset_type.toLowerCase().includes("laptop") ||
+        asset.asset_type.toLowerCase().includes("mini desktop"))
+    ) {
+      const [chargerRows] = await pool.query(
+        "SELECT serial_number FROM assets WHERE parent_asset_code = ? AND asset_type = 'Charger'",
+        [code]
+      );
+
+      if (chargerRows.length > 0) {
+        asset.charger_serial = chargerRows[0].serial_number;
+      } else {
+        asset.charger_serial = null;
+      }
+    } else {
+      asset.charger_serial = null;
+    }
+
+    res.json(asset);
   } catch (err) {
     console.error("❌ Error fetching asset:", err);
     res.status(500).json({ error: "Failed to fetch asset" });
   }
 };
+
 
 // ➤ Assign single or multiple assets
 export const assignAssets = async (req, res) => {
@@ -58,7 +83,7 @@ export const assignAssets = async (req, res) => {
         psd_id
       } = item;
 
-      // Skip if required fields are missing for assignment
+      // Validate required fields
       if (!asset_code || !serial_number || !asset_type || !emp_code || !assigned_by || !assign_date || !psd_id) {
         skipped.push({ asset_code, reason: "Missing required fields" });
         continue;
@@ -71,7 +96,7 @@ export const assignAssets = async (req, res) => {
       );
 
       if (!existingAsset.length) {
-        // Insert new asset
+        // Insert new asset if not found
         await pool.query(
           `INSERT INTO assets 
           (asset_code, serial_number, asset_type, asset_brand, processor, charger_serial, parent_asset_code, warranty_start, warranty_end, status) 
@@ -89,7 +114,6 @@ export const assignAssets = async (req, res) => {
           ]
         );
       } else {
-        // If asset exists but not available, skip
         const existing = existingAsset[0];
         if (existing.status !== "available") {
           skipped.push({ asset_code, reason: `Asset is currently ${existing.status}` });
@@ -105,7 +129,7 @@ export const assignAssets = async (req, res) => {
         [psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark || null]
       );
 
-      // 3️⃣ Update asset status & warranty
+      // 3️⃣ Update asset status
       await pool.query(
         `UPDATE assets SET status = 'assigned', warranty_start = ?, warranty_end = ? WHERE asset_code = ?`,
         [warranty_start || null, warranty_end || null, asset_code]
@@ -121,10 +145,10 @@ export const assignAssets = async (req, res) => {
   }
 };
 
-// Helper to format ISO string to YYYY-MM-DD
+// ➤ Helper: Format ISO string to YYYY-MM-DD
 const formatDate = (isoString) => {
   if (!isoString) return null;
-  return isoString.split('T')[0]; // take only the date part
+  return isoString.split("T")[0]; // take only date part
 };
 
 export const addAsset = async (req, res) => {
@@ -144,6 +168,7 @@ export const addAsset = async (req, res) => {
       return res.status(400).json({ error: "asset_code, serial_number, and asset_type are required" });
     }
 
+    // Check if asset already exists
     const [existing] = await pool.query(
       "SELECT * FROM assets WHERE asset_code = ? OR serial_number = ?",
       [asset_code, serial_number]
@@ -153,55 +178,55 @@ export const addAsset = async (req, res) => {
       return res.status(400).json({ error: "Asset code or serial number already exists" });
     }
 
-    const columns = ['asset_code', 'serial_number', 'asset_type'];
+    // Insert main asset
+    const columns = ["asset_code", "serial_number", "asset_type"];
     const values = [asset_code, serial_number, asset_type];
-    const placeholders = ['?', '?', '?'];
+    const placeholders = ["?", "?", "?"];
 
     if (asset_brand) {
-      columns.push('asset_brand');
+      columns.push("asset_brand");
       values.push(asset_brand);
-      placeholders.push('?');
+      placeholders.push("?");
     }
 
-    if ((asset_type.toLowerCase().includes('laptop') || asset_type.toLowerCase().includes('desktop')) && processor) {
-      columns.push('processor');
+    if (processor) {
+      columns.push("processor");
       values.push(processor);
-      placeholders.push('?');
-    }
-
-    if ((asset_type.toLowerCase().includes('laptop') || asset_type.toLowerCase().includes('mini desktop')) && charger_serial) {
-      columns.push('charger_serial');
-      values.push(charger_serial);
-      placeholders.push('?');
+      placeholders.push("?");
     }
 
     if (warranty_start) {
-      columns.push('warranty_start');
-      values.push(formatDate(warranty_start)); // ✅ convert to YYYY-MM-DD
-      placeholders.push('?');
+      columns.push("warranty_start");
+      values.push(formatDate(warranty_start));
+      placeholders.push("?");
     }
 
     if (warranty_end) {
-      columns.push('warranty_end');
-      values.push(formatDate(warranty_end)); // ✅ convert to YYYY-MM-DD
-      placeholders.push('?');
+      columns.push("warranty_end");
+      values.push(formatDate(warranty_end));
+      placeholders.push("?");
     }
 
-    columns.push('status');
-    values.push('available');
-    placeholders.push('?');
+    columns.push("status");
+    values.push("available");
+    placeholders.push("?");
 
-    const sql = `INSERT INTO assets (${columns.join(', ')}) VALUES (${placeholders.join(', ')})`;
-
+    const sql = `INSERT INTO assets (${columns.join(", ")}) VALUES (${placeholders.join(", ")})`;
     await pool.query(sql, values);
 
-    res.json({ message: "✅ Asset added successfully" });
+    // Create charger asset if applicable
+    if ((asset_type.toLowerCase().includes("laptop") || asset_type.toLowerCase().includes("mini desktop")) && charger_serial) {
+      const chargerCode = `${asset_code}-CH`; // Only asset_code gets suffix
+      await pool.query(
+        `INSERT INTO assets (asset_code, serial_number, asset_type, asset_brand, parent_asset_code, status)
+         VALUES (?, ?, 'Charger', ?, ?, 'available')`,
+        [chargerCode, charger_serial, asset_brand || null, asset_code]
+      );
+    }
 
+    res.json({ message: "✅ Asset added successfully" });
   } catch (err) {
     console.error("❌ Failed to add asset:", err);
     res.status(500).json({ error: "Failed to add asset" });
   }
 };
-
-
-
