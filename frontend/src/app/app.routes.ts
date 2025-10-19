@@ -11,6 +11,7 @@ import { AddAsset } from './assets/add-asset/add-asset';
 import { EditAsset } from './assets/edit-asset/edit-asset';
 import { AssignAsset } from './assignments/assign-asset/assign-asset';
 import { ScrapAsset } from './assets/scrap-asset/scrap-asset';
+import { AssetModificationComponent } from './assets/asset-modification/asset-modification';
 
 export const routes: Routes = [
   {
@@ -23,6 +24,7 @@ export const routes: Routes = [
       { path: 'assets', component: AssetList },
       { path: 'assets/add', component: AddAsset },
       { path: 'assets/edit/:id', component: EditAsset },
+      { path: 'assets/modify/:assetCode', component: AssetModificationComponent },
       { path: 'assignments/scrap', component: ScrapAsset },
 
 

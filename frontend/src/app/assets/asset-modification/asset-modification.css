@@ -1,0 +1,23 @@
+.mod-container {
+  display: flex;
+  flex-direction: column; /* ✅ stack cards vertically */
+  gap: 16px; /* spacing between cards */
+  padding: 16px;
+}
+
+.mod-card,
+.mod-list,
+.empty-state {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.empty-state {
+  text-align: center;
+  color: gray;
+  font-style: italic;
+}

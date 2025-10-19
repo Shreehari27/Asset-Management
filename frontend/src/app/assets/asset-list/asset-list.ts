@@ -12,6 +12,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Asset } from '../../shared/models/asset';
 import { AssetService } from '../../services/Sharedasset';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-asset-list',
@@ -27,7 +28,8 @@ import { AssetService } from '../../services/Sharedasset';
     MatOptionModule,
     MatSelectModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    MatTooltip
   ],
   providers: [AssetService],
   templateUrl: './asset-list.html',
@@ -36,16 +38,16 @@ import { AssetService } from '../../services/Sharedasset';
 export class AssetList implements OnInit {
   assets: Asset[] = [];
   filteredAssets: Asset[] = [];
-  displayedColumns: string[] = ['asset_code', 'serial_number', 'asset_type', 'asset_brand', 'status'];
+  displayedColumns: string[] = ['asset_code', 'serial_number', 'asset_type', 'asset_brand', 'status', 'warranty_status', 'actions'];
 
   filters = {
+    asset_code: '',
     serial_number: '',
     asset_type: '',
     asset_brand: '',
     status: ''
   };
 
-  // 🔹 Predefined Asset Types
   assetTypes: string[] = [
     'Monitor',
     'Desktop',
@@ -79,6 +81,7 @@ export class AssetList implements OnInit {
 
   applyFilters(): void {
     this.filteredAssets = this.assets.filter(asset =>
+      (!this.filters.asset_code || asset.asset_code.toLowerCase().includes(this.filters.asset_code.toLowerCase())) &&
       (!this.filters.serial_number || asset.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase())) &&
       (!this.filters.asset_type || asset.asset_type.toLowerCase() === this.filters.asset_type.toLowerCase()) &&
       (!this.filters.asset_brand || (asset.asset_brand && asset.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase()))) &&
@@ -87,12 +90,26 @@ export class AssetList implements OnInit {
   }
 
   resetFilters(): void {
-    this.filters = { serial_number: '', asset_type: '', asset_brand: '', status: '' };
+    this.filters = { asset_code: '', serial_number: '', asset_type: '', asset_brand: '', status: '' };
     this.filteredAssets = [...this.assets];
   }
 
-  /** Redirect to Add Asset Component */
   addAsset(): void {
     this.router.navigate(['/assets/add']);
+  }
+
+  openModification(asset: Asset): void {
+    this.router.navigate(['/assets/modify', asset.asset_code]);
+  }
+
+  getWarrantyStatus(asset: Asset): string {
+    if (!asset.warranty_start || !asset.warranty_end) return 'Expired';
+    const today = new Date();
+    const endDate = new Date(asset.warranty_end);
+    return endDate >= today ? 'Active' : 'Expired';
+  }
+
+  getWarrantyColor(asset: Asset): string {
+    return this.getWarrantyStatus(asset) === 'Active' ? 'warranty-active' : 'warranty-expired';
   }
 }

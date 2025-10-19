@@ -16,19 +16,12 @@ export const getAssetByCode = async (req, res) => {
   try {
     const { code } = req.params;
 
-    // Fetch main asset
-    const [rows] = await pool.query(
-      "SELECT * FROM assets WHERE asset_code = ?",
-      [code]
-    );
+    const [rows] = await pool.query("SELECT * FROM assets WHERE asset_code = ?", [code]);
 
-    if (rows.length === 0) {
-      return res.status(200).json(null); // return null for new asset
-    }
+    if (rows.length === 0) return res.status(200).json(null);
 
     const asset = rows[0];
 
-    // If it's laptop or mini desktop, try fetching linked charger
     if (
       asset.asset_type &&
       (asset.asset_type.toLowerCase().includes("laptop") ||
@@ -39,11 +32,7 @@ export const getAssetByCode = async (req, res) => {
         [code]
       );
 
-      if (chargerRows.length > 0) {
-        asset.charger_serial = chargerRows[0].serial_number;
-      } else {
-        asset.charger_serial = null;
-      }
+      asset.charger_serial = chargerRows.length > 0 ? chargerRows[0].serial_number : null;
     } else {
       asset.charger_serial = null;
     }
@@ -54,7 +43,6 @@ export const getAssetByCode = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch asset" });
   }
 };
-
 
 // ➤ Assign single or multiple assets
 export const assignAssets = async (req, res) => {
@@ -83,31 +71,27 @@ export const assignAssets = async (req, res) => {
         psd_id
       } = item;
 
-      // Validate required fields
       if (!asset_code || !serial_number || !asset_type || !emp_code || !assigned_by || !assign_date || !psd_id) {
         skipped.push({ asset_code, reason: "Missing required fields" });
         continue;
       }
 
-      // 1️⃣ Check if asset exists
       const [existingAsset] = await pool.query(
         "SELECT * FROM assets WHERE asset_code = ? OR serial_number = ?",
         [asset_code, serial_number]
       );
 
       if (!existingAsset.length) {
-        // Insert new asset if not found
         await pool.query(
           `INSERT INTO assets 
-          (asset_code, serial_number, asset_type, asset_brand, processor, charger_serial, parent_asset_code, warranty_start, warranty_end, status) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')`,
+          (asset_code, serial_number, asset_type, asset_brand, processor, parent_asset_code, warranty_start, warranty_end, status) 
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available')`,
           [
             asset_code,
             serial_number,
             asset_type,
             asset_brand || null,
             processor || null,
-            charger_serial || null,
             parent_asset_code || null,
             warranty_start || null,
             warranty_end || null
@@ -121,7 +105,6 @@ export const assignAssets = async (req, res) => {
         }
       }
 
-      // 2️⃣ Assign asset
       await pool.query(
         `INSERT INTO assignment_active 
         (psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark) 
@@ -129,7 +112,6 @@ export const assignAssets = async (req, res) => {
         [psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark || null]
       );
 
-      // 3️⃣ Update asset status
       await pool.query(
         `UPDATE assets SET status = 'assigned', warranty_start = ?, warranty_end = ? WHERE asset_code = ?`,
         [warranty_start || null, warranty_end || null, asset_code]
@@ -148,9 +130,10 @@ export const assignAssets = async (req, res) => {
 // ➤ Helper: Format ISO string to YYYY-MM-DD
 const formatDate = (isoString) => {
   if (!isoString) return null;
-  return isoString.split("T")[0]; // take only date part
+  return isoString.split("T")[0];
 };
 
+// ➤ Add new asset (with optional charger)
 export const addAsset = async (req, res) => {
   try {
     const {
@@ -168,7 +151,6 @@ export const addAsset = async (req, res) => {
       return res.status(400).json({ error: "asset_code, serial_number, and asset_type are required" });
     }
 
-    // Check if asset already exists
     const [existing] = await pool.query(
       "SELECT * FROM assets WHERE asset_code = ? OR serial_number = ?",
       [asset_code, serial_number]
@@ -178,7 +160,6 @@ export const addAsset = async (req, res) => {
       return res.status(400).json({ error: "Asset code or serial number already exists" });
     }
 
-    // Insert main asset
     const columns = ["asset_code", "serial_number", "asset_type"];
     const values = [asset_code, serial_number, asset_type];
     const placeholders = ["?", "?", "?"];
@@ -214,9 +195,8 @@ export const addAsset = async (req, res) => {
     const sql = `INSERT INTO assets (${columns.join(", ")}) VALUES (${placeholders.join(", ")})`;
     await pool.query(sql, values);
 
-    // Create charger asset if applicable
     if ((asset_type.toLowerCase().includes("laptop") || asset_type.toLowerCase().includes("mini desktop")) && charger_serial) {
-      const chargerCode = `${asset_code}-CH`; // Only asset_code gets suffix
+      const chargerCode = `${asset_code}-CH`;
       await pool.query(
         `INSERT INTO assets (asset_code, serial_number, asset_type, asset_brand, parent_asset_code, status)
          VALUES (?, ?, 'Charger', ?, ?, 'available')`,
@@ -230,3 +210,50 @@ export const addAsset = async (req, res) => {
     res.status(500).json({ error: "Failed to add asset" });
   }
 };
+
+// ====================================================
+// ➤ Add modification record
+// ====================================================
+export const addAssetModification = async (req, res) => {
+  try {
+    const { asset_code, modified_by, modification } = req.body;
+
+    if (!asset_code || !modified_by || !modification) {
+      return res.status(400).json({ error: "asset_code, modified_by, and modification are required" });
+    }
+
+    await pool.query(
+      `INSERT INTO asset_modifications (asset_code, modified_by, modification)
+       VALUES (?, ?, ?)`,
+      [asset_code, modified_by, modification]
+    );
+
+    res.json({ message: "✅ Modification added successfully" });
+  } catch (err) {
+    console.error("❌ Failed to add modification:", err);
+    res.status(500).json({ error: "Failed to add modification" });
+  }
+};
+
+// ➤ Get modifications for a given asset
+export const getAssetModifications = async (req, res) => {
+  try {
+    const { asset_code } = req.params;
+
+    const [rows] = await pool.query(
+      `SELECT am.*, e.name AS modified_by_name, e.emp_code AS modified_by_code
+       FROM asset_modifications am
+       JOIN employees e ON am.modified_by = e.emp_code
+       WHERE am.asset_code = ?
+       ORDER BY am.modification_date DESC`,
+      [asset_code]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Failed to fetch modifications:", err);
+    res.status(500).json({ error: "Failed to fetch modifications" });
+  }
+};
+
+

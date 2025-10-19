@@ -168,17 +168,3 @@ DO
             ELSE 'unknown'
         END;
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-

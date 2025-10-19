@@ -1,45 +1,81 @@
-/* Container styling */
 .container {
   padding: 20px;
 }
 
-/* Center the heading */
-.container h2 {
-  text-align: center;
-  color: #037fb4;
-  margin-bottom: 16px;
-}
-
-/* Add Asset button container */
 .add-asset-btn-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
+  text-align: right;
+  margin-bottom: 15px;
 }
 
-.add-asset-btn-container button {
-  background-color: #037fb4;
-  color: white;
-  text-transform: none;
-  font-weight: 500;
-  padding: 6px 16px;
-  border-radius: 4px;
-}
-
-/* Search container */
 .search-container {
   display: flex;
-  gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-.search-container mat-form-field {
-  min-width: 200px;
-  flex: 1;
-}
-
-/* Table styling */
-table {
+.full-width-table {
   width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Status Chip */
+.status-chip {
+  text-transform: capitalize;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.status-chip.available {
+  background: #e0f7e9;
+  color: #1b5e20;
+}
+
+.status-chip.assigned {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status-chip.scrapped {
+  background: #ffebee;
+  color: #b71c1c;
+}
+
+.status-chip.repair {
+  background: #e3f2fd;
+  color: #0d47a1;
+}
+
+.status-chip.retired {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+/* Warranty Chip */
+.warranty-chip {
+  text-transform: capitalize;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.warranty-active {
+  background-color: #e0f7e9;
+  color: #1b5e20;
+}
+
+.warranty-expired {
+  background-color: #ffebee;
+  color: #b71c1c;
+}
+
+/* Disabled buttons */
+button[disabled] mat-icon {
+  color: rgba(0, 0, 0, 0.3);
+  cursor: not-allowed;
 }
