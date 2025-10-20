@@ -35,9 +35,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 export class AddAsset implements OnInit {
   form: FormGroup;
   assetTypes: string[] = [
-    'Monitor', 'Desktop', 'Windows Laptop', 'Mac Laptop', 
-    'Mouse', 'Keyboard', 'Usb Camera', 'Wifi Device', 
-    'Headset', 'Laptop Bag', 'UPS', 'Jio/Airtel Modem'
+    'Monitor', 'Desktop', 'Mini Desktop', 'Windows Laptop', 'Mac Laptop',
+    'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard', 'Usb Camera', 'Laptop Bag',
+    'Wifi Device', 'Docking Station', 'UPS', 'Jio/Airtel Modem', 'Others'
   ];
 
   constructor(
@@ -58,7 +58,7 @@ export class AddAsset implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   /** Show processor for laptops/desktops */
   isLaptopOrDesktop(): boolean {

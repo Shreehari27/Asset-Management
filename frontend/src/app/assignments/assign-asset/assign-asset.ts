@@ -41,8 +41,10 @@ export class AssignAsset implements OnInit {
   itPersons: Employee[] = [];
 
   assetTypes = [
-    'Desktop', 'Windows Laptop', 'Mac Laptop', 'Monitor', 'Mouse',
-    'Keyboard', 'Mini Desktop', 'UPS', 'WiFi Device'
+    'Monitor', 'Desktop', 'Windows Laptop', 'Mac Laptop', 
+    'Mouse', 'Keyboard', 'Usb Camera', 'Wifi Device', 
+    'Headset', 'Laptop Bag', 'UPS', 'Jio/Airtel Modem','Wireless Mouse', 
+    'Mini Desktop','Wireless Keyboard','Headset', 'Other','Docking Station'
   ];
 
   constructor(

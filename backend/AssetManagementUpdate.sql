@@ -168,3 +168,22 @@ DO
             ELSE 'unknown'
         END;
         
+        
+        
+        
+        
+SELECT trigger_name,
+       event_object_table AS table_name,
+       action_timing,
+       event_manipulation AS event,
+       action_statement AS definition
+FROM information_schema.triggers
+WHERE trigger_schema = 'ASSETMANAGEMENT';
+
+
+ALTER TABLE assets DROP INDEX serial_number;
+ALTER TABLE assets DROP INDEX serial_number_UNIQUE;
+SHOW CREATE TABLE assets;
+
+
+        

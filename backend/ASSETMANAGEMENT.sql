@@ -64,43 +64,7 @@ CREATE TABLE assignment_history (
 );
 
 -- ================================
--- Triggers
--- ================================
 
--- 1️⃣ Insert assignment → copy to history + mark asset assigned
-DELIMITER //
-CREATE TRIGGER trg_insert_assignment
-AFTER INSERT ON assignment_active
-FOR EACH ROW
-BEGIN
-    INSERT INTO assignment_history (asset_code, emp_code, assigned_by, assign_date, assign_remark)
-    VALUES (NEW.asset_code, NEW.emp_code, NEW.assigned_by, NEW.assign_date, NEW.assign_remark);
-
-    UPDATE assets SET status = 'assigned' WHERE asset_code = NEW.asset_code;
-END;
-//
-DELIMITER ;
-
--- 2️⃣ Return assignment → update history with return info
-DELIMITER //
-CREATE TRIGGER trg_return_assignment
-AFTER DELETE ON assignment_active
-FOR EACH ROW
-BEGIN
-    UPDATE assignment_history
-    SET return_date = CURRENT_DATE,
-        return_remark = 'Returned'
-        -- returned_to should be handled in API, not trigger
-    WHERE asset_code = OLD.asset_code
-      AND emp_code = OLD.emp_code
-      AND return_date IS NULL;
-
-    UPDATE assets 
-    SET status = 'available' 
-    WHERE asset_code = OLD.asset_code;
-END;
-//
-DELIMITER ;
 
 
 CREATE INDEX idx_active_asset ON assignment_active(asset_code);
@@ -134,6 +98,7 @@ select * FROM assignment_history;
 select * from employees;
 select * FROM assets;
 select * from asset_scrap;
+select * from asset_modifications;
 
 DESCRIBE assets;
 
