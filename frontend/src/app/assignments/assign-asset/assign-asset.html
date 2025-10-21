@@ -65,6 +65,9 @@
           <mat-form-field *ngIf="!isCables(i)" appearance="outline" class="row-field">
             <mat-label>Asset Code</mat-label>
             <input matInput formControlName="asset_code" (blur)="onAssetCodeBlur(i)" required />
+            <mat-error *ngIf="assignments.at(i).get('asset_code')?.hasError('assigned')">
+              ⚠️ This asset is already assigned.
+            </mat-error>
           </mat-form-field>
 
           <!-- Serial Number -->
@@ -89,6 +92,9 @@
           <mat-form-field *ngIf="hasCharger(i)" appearance="outline" class="row-field">
             <mat-label>Charger Serial Number</mat-label>
             <input matInput formControlName="charger_serial" />
+            <mat-error *ngIf="assignments.at(i).get('charger_serial')?.hasError('assigned')">
+              ⚠️ This charger is already assigned.
+            </mat-error>
           </mat-form-field>
         </div>
 

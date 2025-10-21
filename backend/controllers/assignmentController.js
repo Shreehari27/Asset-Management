@@ -25,7 +25,6 @@ export const assignAsset = async (req, res) => {
         warranty_end,
       } = assignment;
 
-      // ⚙️ Skip serial check for cables (allow 'N/A' or empty)
       const isCable = asset_type?.toLowerCase() === "cables";
       const effectiveSerial =
         !isCable && (!serial_number || serial_number.trim() === "")
@@ -44,47 +43,44 @@ export const assignAsset = async (req, res) => {
         continue;
       }
 
-      // 1️⃣ Check if asset exists (use asset_code only — serial may repeat)
-      let [assetRows] = await pool.query(
-        "SELECT * FROM assets WHERE asset_code = ?",
+      // 1️⃣ Check asset existence & status
+      const [assetRows] = await pool.query(
+        "SELECT status FROM assets WHERE asset_code = ? LIMIT 1",
         [asset_code]
       );
 
-      if (assetRows.length === 0) {
-        // New asset
-        await pool.query(
-          `INSERT INTO assets
-            (asset_code, serial_number, asset_type, asset_brand, processor, parent_asset_code, warranty_start, warranty_end, status)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available')
-           ON DUPLICATE KEY UPDATE
-              asset_type = VALUES(asset_type),
-              asset_brand = VALUES(asset_brand),
-              processor = VALUES(processor),
-              warranty_start = VALUES(warranty_start),
-              warranty_end = VALUES(warranty_end)`,
-          [
-            asset_code,
-            effectiveSerial,
-            asset_type,
-            asset_brand || null,
-            processor || null,
-            parent_asset_code || null,
-            warranty_start || null,
-            warranty_end || null,
-          ]
-        );
-      } else {
-        const existing = assetRows[0];
-        if (existing.status !== "available") {
-          results.push({
-            asset_code,
-            error: `Asset ${asset_code} is currently ${existing.status}`,
-          });
-          continue;
-        }
+      if (assetRows.length > 0 && assetRows[0].status === "assigned") {
+        results.push({
+          asset_code,
+          error: `⚠️ Asset ${asset_code} is already assigned to another employee.`,
+        });
+        continue; // ✅ Skip assigning this asset
       }
 
-      // 2️⃣ Assign asset
+      // 2️⃣ Create or update asset record
+      await pool.query(
+        `INSERT INTO assets
+          (asset_code, serial_number, asset_type, asset_brand, processor, parent_asset_code, warranty_start, warranty_end, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available')
+         ON DUPLICATE KEY UPDATE
+            asset_type = VALUES(asset_type),
+            asset_brand = VALUES(asset_brand),
+            processor = VALUES(processor),
+            warranty_start = VALUES(warranty_start),
+            warranty_end = VALUES(warranty_end)`,
+        [
+          asset_code,
+          effectiveSerial,
+          asset_type,
+          asset_brand || null,
+          processor || null,
+          parent_asset_code || null,
+          warranty_start || null,
+          warranty_end || null,
+        ]
+      );
+
+      // 3️⃣ Assign asset
       await pool.query(
         `INSERT INTO assignment_active
           (psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark)
@@ -92,7 +88,7 @@ export const assignAsset = async (req, res) => {
         [psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark]
       );
 
-      // 3️⃣ Update warranty dates if provided (skip for cables)
+      // 4️⃣ Update warranty if needed (skip for cables)
       if (!isCable && (warranty_start || warranty_end)) {
         await pool.query(
           `UPDATE assets SET warranty_start = ?, warranty_end = ? WHERE asset_code = ?`,
@@ -100,7 +96,7 @@ export const assignAsset = async (req, res) => {
         );
       }
 
-      // 4️⃣ Mark asset as assigned
+      // 5️⃣ Finally mark assigned
       await pool.query(
         `UPDATE assets SET status = 'assigned' WHERE asset_code = ?`,
         [asset_code]
@@ -115,6 +111,7 @@ export const assignAsset = async (req, res) => {
     res.status(500).json({ error: err.message || "Failed to assign asset" });
   }
 };
+
 
 // =============================
 // ➤ Get Live Assignments

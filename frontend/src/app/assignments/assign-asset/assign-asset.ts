@@ -49,7 +49,7 @@ export class AssignAsset implements OnInit {
   ];
 
   cableTypes: string[] = [
-    'DESKTOP POWER CABLE', 'LAPTOP POWER CABLE', 'HDMI CABLE', 'DP CABLE',
+    'MONITOR POWER CABLE', 'DESKTOP POWER CABLE', 'LAPTOP POWER CABLE', 'HDMI CABLE', 'DP CABLE',
     'HDMI TO VGA CABLE', 'VGA TO HDMI CABLE', 'VGA CABLE', 'WIFI EXTENDER',
     'POWER CABLE EXTENSION', 'LAN CABLE'
   ];
@@ -77,7 +77,7 @@ export class AssignAsset implements OnInit {
   createAssignment(): FormGroup {
     return this.fb.group({
       asset_code: ['', Validators.required],
-      serial_number: [''], // will be dynamically validated
+      serial_number: [''],
       asset_type: ['', Validators.required],
       cable_type: [''],
       asset_brand: [''],
@@ -118,28 +118,28 @@ export class AssignAsset implements OnInit {
     return (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase() === 'cables';
   }
 
-  /** On asset type change, update validators */
+  /** Update validators based on asset type */
   onAssetTypeChange(i: number): void {
     const form = this.assignments.at(i);
-    const assetType = form.get('asset_type')?.value;
+    const assetType = form.get('asset_type')?.value?.toLowerCase();
     const serial = form.get('serial_number');
     const cableType = form.get('cable_type');
 
-    if (assetType && assetType.toLowerCase() === 'cables') {
+    if (assetType === 'cables') {
       cableType?.setValidators([Validators.required]);
       serial?.clearValidators();
       serial?.setValue('N/A');
     } else {
       cableType?.clearValidators();
       serial?.setValidators([Validators.required]);
+      if (serial?.value === 'N/A') serial.setValue('');
     }
+
     serial?.updateValueAndValidity();
     cableType?.updateValueAndValidity();
 
-    // Clear other fields that might be conditionally required
-    if (assetType && assetType.toLowerCase() === 'cables') {
+    if (assetType === 'cables') {
       form.patchValue({
-        serial_number: 'N/A',
         processor: '',
         charger_serial: '',
         warranty_start: '',
@@ -148,7 +148,7 @@ export class AssignAsset implements OnInit {
     }
   }
 
-  /** On cable type change, load available cables */
+  /** Load available cables */
   onCableTypeChange(i: number): void {
     const form = this.assignments.at(i);
     const cableType = form.get('cable_type')?.value;
@@ -164,7 +164,7 @@ export class AssignAsset implements OnInit {
     });
   }
 
-  /** Autofill fields for known asset codes */
+  /** Validate asset code for availability */
   onAssetCodeBlur(i: number): void {
     const form = this.assignments.at(i);
     const code = form.get('asset_code')?.value?.trim();
@@ -173,21 +173,46 @@ export class AssignAsset implements OnInit {
     this.assetService.getAssetByCode(code).subscribe({
       next: (asset: Asset | null) => {
         if (asset) {
-          form.patchValue({
-            serial_number: asset.serial_number,
-            asset_type: asset.asset_type,
-            asset_brand: asset.asset_brand,
-            processor: asset.processor,
-            charger_serial: asset.charger_serial || '',
-            warranty_start: asset.warranty_start,
-            warranty_end: asset.warranty_end,
-            isNew: false
-          });
+          if (asset.status === 'assigned') {
+            this.snackBar.open(`⚠️ Asset ${code} is already assigned.`, 'Close', { duration: 3000 });
+            form.get('asset_code')?.setErrors({ assigned: true });
+          } else {
+            form.patchValue({
+              serial_number: asset.serial_number,
+              asset_type: asset.asset_type,
+              asset_brand: asset.asset_brand,
+              processor: asset.processor,
+              charger_serial: asset.charger_serial || '',
+              warranty_start: asset.warranty_start,
+              warranty_end: asset.warranty_end,
+              isNew: false
+            });
+            form.get('asset_code')?.setErrors(null);
+          }
         } else {
           form.patchValue({ isNew: true });
+          form.get('asset_code')?.setErrors(null);
+        }
+
+        // Check charger asset if exists
+        if (this.hasCharger(i) && form.get('charger_serial')?.value) {
+          const chargerCode = `${code}-CH`;
+          this.assetService.getAssetByCode(chargerCode).subscribe({
+            next: (ch: Asset | null) => {
+              if (ch && ch.status === 'assigned') {
+                this.snackBar.open(`⚠️ Charger ${chargerCode} is already assigned.`, 'Close', { duration: 3000 });
+                form.get('charger_serial')?.setErrors({ assigned: true });
+              } else {
+                form.get('charger_serial')?.setErrors(null);
+              }
+            }
+          });
         }
       },
-      error: () => form.patchValue({ isNew: true })
+      error: () => {
+        form.patchValue({ isNew: true });
+        form.get('asset_code')?.setErrors(null);
+      }
     });
   }
 
@@ -209,12 +234,10 @@ export class AssignAsset implements OnInit {
     });
   }
 
-  /** Submit assignment payload */
+  /** Submit assignment */
   onSubmit(): void {
-    // Ensure validators are up to date before checking validity
-    this.assignments.controls.forEach((ctrl, i) => {
-      this.onAssetTypeChange(i);
-    });
+    // Refresh validators
+    this.assignments.controls.forEach((ctrl, i) => this.onAssetTypeChange(i));
 
     if (this.assignmentForm.invalid) {
       this.snackBar.open('⚠️ Please fill all required fields.', 'Close', { duration: 3000 });
@@ -246,7 +269,7 @@ export class AssignAsset implements OnInit {
 
       payload.push(mainAsset);
 
-      // Auto-assign charger if applicable
+      // Auto-add charger
       if (this.hasCharger(i) && a.charger_serial) {
         payload.push({
           asset_code: `${a.asset_code}-CH`,
@@ -263,12 +286,18 @@ export class AssignAsset implements OnInit {
       }
     }
 
-    // Submit payload
     this.assignmentService.assignAssets(payload).subscribe({
-      next: () => {
-        this.snackBar.open('✅ Assets assigned successfully.', 'Close', { duration: 3000 });
-        this.assignmentForm.reset();
-        this.assignmentForm.setControl('assignments', this.fb.array([this.createAssignment()]));
+      next: (res: any) => {
+        // Check if response contains errors
+        if (Array.isArray(res) && res.some(r => r.error)) {
+          res.forEach(r => {
+            this.snackBar.open(r.error, 'Close', { duration: 4000 });
+          });
+        } else {
+          this.snackBar.open('✅ Assets assigned successfully.', 'Close', { duration: 3000 });
+          this.assignmentForm.reset();
+          this.assignmentForm.setControl('assignments', this.fb.array([this.createAssignment()]));
+        }
       },
       error: err => {
         console.error(err);
