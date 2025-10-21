@@ -1,6 +1,7 @@
 <div class="assign-container">
   <h2>Assign Assets</h2>
   <form [formGroup]="assignmentForm" (ngSubmit)="onSubmit()">
+
     <!-- Employee + IT Staff -->
     <div class="row">
       <mat-form-field appearance="outline" class="full-width">
@@ -35,6 +36,7 @@
       <div *ngFor="let a of assignments.controls; let i = index" [formGroupName]="i" class="assignment-row">
 
         <div class="row">
+          <!-- Asset Type -->
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Asset Type</mat-label>
             <mat-select formControlName="asset_type" required>
@@ -42,38 +44,56 @@
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="row-field">
+          <!-- Cable Type -->
+          <mat-form-field *ngIf="isCables(i)" appearance="outline" class="row-field">
+            <mat-label>Cable Type</mat-label>
+            <mat-select formControlName="cable_type" (selectionChange)="onCableTypeChange(i)" required>
+              <mat-option *ngFor="let c of cableTypes" [value]="c">{{ c }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Asset Code -->
+          <mat-form-field *ngIf="isCables(i)" appearance="outline" class="row-field">
+            <mat-label>Asset Code</mat-label>
+            <mat-select formControlName="asset_code" required>
+              <mat-option *ngFor="let cable of availableCables" [value]="cable.asset_code">
+                {{ cable.asset_code }} ({{ cable.serial_number }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field *ngIf="!isCables(i)" appearance="outline" class="row-field">
             <mat-label>Asset Code</mat-label>
             <input matInput formControlName="asset_code" (blur)="onAssetCodeBlur(i)" required />
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="row-field">
+          <!-- Serial Number -->
+          <mat-form-field appearance="outline" class="row-field" *ngIf="!isCables(i)">
             <mat-label>Serial Number</mat-label>
             <input matInput formControlName="serial_number" [required]="a.get('isNew')?.value" />
           </mat-form-field>
         </div>
 
-        <div class="row">
+        <!-- Brand / Processor / Charger -->
+        <div class="row" *ngIf="!isCables(i)">
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Brand</mat-label>
             <input matInput formControlName="asset_brand" />
           </mat-form-field>
 
-          <!-- Processor -->
           <mat-form-field *ngIf="isLaptopOrDesktop(i)" appearance="outline" class="row-field">
             <mat-label>Processor</mat-label>
-            <input matInput formControlName="processor" placeholder="e.g. Intel i5 / Ryzen 7" [required]="a.get('isNew')?.value" />
+            <input matInput formControlName="processor" [required]="a.get('isNew')?.value" />
           </mat-form-field>
 
-          <!-- Charger -->
           <mat-form-field *ngIf="hasCharger(i)" appearance="outline" class="row-field">
             <mat-label>Charger Serial Number</mat-label>
-            <input matInput formControlName="charger_serial" [required]="a.get('isNew')?.value" placeholder="Enter charger serial number" />
+            <input matInput formControlName="charger_serial" [required]="a.get('isNew')?.value" />
           </mat-form-field>
         </div>
 
-        <!-- Warranty Dates -->
-        <div class="row">
+        <!-- Warranty Dates (hidden for cables) -->
+        <div class="row" *ngIf="!isCables(i)">
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Warranty Start</mat-label>
             <input matInput [matDatepicker]="ws" formControlName="warranty_start" [required]="a.get('isNew')?.value" />
@@ -89,6 +109,7 @@
           </mat-form-field>
         </div>
 
+        <!-- Assign Date / Remark -->
         <div class="row">
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Assign Date</mat-label>

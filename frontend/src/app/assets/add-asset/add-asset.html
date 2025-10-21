@@ -2,32 +2,46 @@
   <h2>Add New Asset</h2>
 
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="row">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Asset Code</mat-label>
-        <input matInput formControlName="asset_code" (blur)="onAssetCodeBlur()" required />
-      </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Serial Number</mat-label>
-        <input matInput formControlName="serial_number" required />
-      </mat-form-field>
-    </div>
-
+    <!-- Asset Type & Code -->
     <div class="row">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Asset Type</mat-label>
-        <mat-select formControlName="asset_type" required>
+        <mat-select formControlName="asset_type" (selectionChange)="onAssetTypeChange()" required>
           <mat-option *ngFor="let t of assetTypes" [value]="t">{{ t }}</mat-option>
         </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Brand</mat-label>
-        <input matInput formControlName="asset_brand" required />
+        <mat-label>Asset Code</mat-label>
+        <input matInput formControlName="asset_code" placeholder="Enter code" required />
       </mat-form-field>
     </div>
 
+    <!-- Serial Number & Brand -->
+    <div class="row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Serial Number</mat-label>
+        <input matInput formControlName="serial_number" placeholder="Enter serial number" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Brand</mat-label>
+        <input matInput formControlName="asset_brand" placeholder="Enter brand" />
+      </mat-form-field>
+    </div>
+
+    <!-- Cable Type (if Cables) -->
+    <div class="row" *ngIf="isCable()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Cable Type</mat-label>
+        <mat-select formControlName="cable_type" required>
+          <mat-option *ngFor="let c of cableTypes" [value]="c">{{ c }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Processor (if Laptop/Desktop) -->
     <div class="row" *ngIf="isLaptopOrDesktop()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Processor</mat-label>
@@ -35,6 +49,7 @@
       </mat-form-field>
     </div>
 
+    <!-- Charger Serial Number (if Laptop/Mini Desktop) -->
     <div class="row" *ngIf="hasCharger()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Charger Serial Number</mat-label>
@@ -42,7 +57,8 @@
       </mat-form-field>
     </div>
 
-    <div class="row">
+    <!-- Warranty Start & End -->
+    <div class="row" *ngIf="!isCable()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Warranty Start</mat-label>
         <input matInput [matDatepicker]="ws" formControlName="warranty_start" />
@@ -58,9 +74,11 @@
       </mat-form-field>
     </div>
 
+    <!-- Action Buttons -->
     <div class="actions">
-      <button mat-raised-button color="primary" type="submit">Add Asset</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Add Asset</button>
       <button mat-raised-button color="warn" type="button" (click)="cancel()">Cancel</button>
     </div>
+
   </form>
 </div>

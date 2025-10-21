@@ -133,10 +133,10 @@ const formatDate = (isoString) => {
   return isoString.split("T")[0];
 };
 
-// ➤ Add new asset (with optional charger)
+// ➤ Add new asset (with optional charger & cable handling)
 export const addAsset = async (req, res) => {
   try {
-    const {
+    let {
       asset_code,
       serial_number,
       asset_type,
@@ -144,25 +144,45 @@ export const addAsset = async (req, res) => {
       processor,
       charger_serial,
       warranty_start,
-      warranty_end
+      warranty_end,
+      cable_type
     } = req.body;
 
-    if (!asset_code || !serial_number || !asset_type) {
-      return res.status(400).json({ error: "asset_code, serial_number, and asset_type are required" });
+    if (!asset_type) {
+      return res.status(400).json({ error: "asset_type is required" });
     }
 
+    // ➤ Auto-generate code & serial for Cables
+    if (asset_type.toLowerCase() === "cables") {
+      const [rows] = await pool.query("SELECT COUNT(*) AS count FROM assets WHERE asset_type='Cables'");
+      const nextNum = rows[0].count + 1;
+      asset_code = `C${nextNum.toString().padStart(3, '0')}`;
+      if (!serial_number) serial_number = "N/A"; // assign default if empty
+    }
+
+    if (!asset_code || !serial_number) {
+      return res.status(400).json({ error: "asset_code and serial_number are required" });
+    }
+
+    // ➤ Check only for duplicate asset_code
     const [existing] = await pool.query(
-      "SELECT * FROM assets WHERE asset_code = ? OR serial_number = ?",
-      [asset_code, serial_number]
+      "SELECT * FROM assets WHERE asset_code = ?",
+      [asset_code]
     );
-
     if (existing.length) {
-      return res.status(400).json({ error: "Asset code or serial number already exists" });
+      return res.status(400).json({ error: "Asset code already exists" });
     }
 
+    // ➤ Build columns and values dynamically
     const columns = ["asset_code", "serial_number", "asset_type"];
     const values = [asset_code, serial_number, asset_type];
     const placeholders = ["?", "?", "?"];
+
+    if (asset_type.toLowerCase() === "cables" && cable_type) {
+      columns.push("cable_type");
+      values.push(cable_type);
+      placeholders.push("?");
+    }
 
     if (asset_brand) {
       columns.push("asset_brand");
@@ -195,6 +215,7 @@ export const addAsset = async (req, res) => {
     const sql = `INSERT INTO assets (${columns.join(", ")}) VALUES (${placeholders.join(", ")})`;
     await pool.query(sql, values);
 
+    // ➤ Insert charger if applicable (laptop / mini desktop)
     if ((asset_type.toLowerCase().includes("laptop") || asset_type.toLowerCase().includes("mini desktop")) && charger_serial) {
       const chargerCode = `${asset_code}-CH`;
       await pool.query(
@@ -204,12 +225,15 @@ export const addAsset = async (req, res) => {
       );
     }
 
-    res.json({ message: "✅ Asset added successfully" });
+    res.json({ message: "✅ Asset added successfully", asset_code });
   } catch (err) {
     console.error("❌ Failed to add asset:", err);
     res.status(500).json({ error: "Failed to add asset" });
   }
 };
+
+
+
 
 // ====================================================
 // ➤ Add modification record

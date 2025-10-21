@@ -1,6 +1,7 @@
-# TODO for Add Employee Card View and Spacing
+# TODO: Fix Terminal Issues in Asset Management App
 
-- [ ] Update add-employee.ts to import MatCardModule
-- [ ] Modify add-employee.html to wrap form in <mat-card>
-- [ ] Adjust add-employee.css to increase spacing between fields
-- [ ] Test the changes by running the app
+## Tasks
+- [x] Update Asset interface in shared/models/asset.ts: add status property and fix cable_type type
+- [x] Fix method name in add-asset.ts: change getAllAssets to getAssets
+- [x] Update add-asset.html: remove onAssetCodeBlur blur event and fix disabled attribute
+- [x] Verify all TypeScript errors are resolved

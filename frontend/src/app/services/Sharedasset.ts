@@ -13,12 +13,14 @@ export interface Asset {
   charger_serial?: string;
   warranty_start?: string;
   warranty_end?: string;
+  cable_type?: string;
   emp_code?: string;
   assigned_by?: string;
   psd_id?: string;
   assign_date?: string;
   assign_remark?: string;
   parent_asset_code?: string;
+  status?: string;
 }
 
 @Injectable({
@@ -35,21 +37,17 @@ export class AssetService {
 
   getAssetByCode(code: string): Observable<Asset | null> {
     return this.http.get<Asset | null>(`${this.apiUrl}/${code}`).pipe(
-      catchError(err => {
-        if (err.status === 404) return of(null); // treat 404 as new asset
-        throw err;
-      })
+      catchError(err => { if (err.status === 404) return of(null); throw err; })
     );
   }
 
-  addAsset(asset: Asset): Observable<any> {
-    return this.http.post(this.apiUrl + '/assign', asset);
-  }
-
   addNewAsset(asset: Asset): Observable<any> {
-    return this.http.post(`${this.apiUrl}/add`, asset); // new for adding assets  not assigning the asset it is using the add assets button
+    return this.http.post(`${this.apiUrl}/add`, asset);
   }
 
+  addAsset(asset: Asset): Observable<any> {
+    return this.http.post(`${this.apiUrl}/assign`, asset);
+  }
 
   updateAsset(code: string, asset: Asset): Observable<any> {
     return this.http.put(`${this.apiUrl}/${code}`, asset);

@@ -39,12 +39,19 @@ export class AssignAsset implements OnInit {
   assignmentForm!: FormGroup;
   employees: Employee[] = [];
   itPersons: Employee[] = [];
+  availableCables: Asset[] = [];
 
-  assetTypes = [
-    'Monitor', 'Desktop', 'Windows Laptop', 'Mac Laptop', 
-    'Mouse', 'Keyboard', 'Usb Camera', 'Wifi Device', 
-    'Headset', 'Laptop Bag', 'UPS', 'Jio/Airtel Modem','Wireless Mouse', 
-    'Mini Desktop','Wireless Keyboard','Headset', 'Other','Docking Station'
+  assetTypes: string[] = [
+    'Monitor', 'Desktop', 'Mini Desktop', 'Windows Laptop', 'Mac Laptop',
+    'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard',
+    'Usb Camera', 'Cables', 'Laptop Bag', 'Wifi Device', 'Docking Station',
+    'UPS', 'Jio/Airtel Modem', 'Others'
+  ];
+
+  cableTypes: string[] = [
+    'DESKTOP POWER CABLE', 'LAPTOP POWER CABLE', 'HDMI CABLE', 'DP CABLE',
+    'HDMI TO VGA CABLE', 'VGA TO HDMI CABLE', 'VGA CABLE', 'WIFI EXTENDER',
+    'POWER CABLE EXTENSION', 'LAN CABLE'
   ];
 
   constructor(
@@ -72,6 +79,7 @@ export class AssignAsset implements OnInit {
       asset_code: ['', Validators.required],
       serial_number: [''],
       asset_type: ['', Validators.required],
+      cable_type: [''],
       asset_brand: [''],
       processor: [''],
       charger_serial: [''],
@@ -79,7 +87,7 @@ export class AssignAsset implements OnInit {
       warranty_end: [''],
       assign_date: ['', Validators.required],
       assign_remark: [''],
-      isNew: [true] // true if asset is new
+      isNew: [true]
     });
   }
 
@@ -105,6 +113,54 @@ export class AssignAsset implements OnInit {
     return type.includes('laptop') || type.includes('mini desktop');
   }
 
+  isCables(i: number): boolean {
+    return (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase() === 'cables';
+  }
+
+  /** Called when Cable Type changes */
+  onCableTypeChange(i: number): void {
+    const form = this.assignments.at(i);
+    const cableType = form.get('cable_type')?.value;
+    if (!cableType) return;
+
+    this.assetService.getAssets().subscribe((assets) => {
+      this.availableCables = assets.filter(a =>
+        a.asset_type.toLowerCase() === 'cables' &&
+        a.cable_type === cableType &&
+        a.status === 'available'
+      );
+
+      form.patchValue({ asset_code: '' });
+    });
+  }
+
+  /** Autofill asset details if asset code exists, otherwise do nothing */
+  onAssetCodeBlur(i: number): void {
+    const form = this.assignments.at(i);
+    const code = form.get('asset_code')?.value?.trim();
+    if (!code || this.isCables(i)) return; // skip autofill for cables
+
+    this.assetService.getAssetByCode(code).subscribe({
+      next: (asset: Asset | null) => {
+        if (asset) {
+          form.patchValue({
+            serial_number: asset.serial_number,
+            asset_type: asset.asset_type,
+            asset_brand: asset.asset_brand,
+            processor: asset.processor,
+            charger_serial: asset.charger_serial || '',
+            warranty_start: asset.warranty_start,
+            warranty_end: asset.warranty_end,
+            isNew: false
+          });
+        } else {
+          form.patchValue({ isNew: true });
+        }
+      },
+      error: () => form.patchValue({ isNew: true })
+    });
+  }
+
   /** Format date as YYYY-MM-DD */
   private formatDate(date: any): string {
     if (!date) return '';
@@ -123,40 +179,7 @@ export class AssignAsset implements OnInit {
     });
   }
 
-  /** Autofill asset details if asset code exists, otherwise do nothing */
-  onAssetCodeBlur(i: number): void {
-    const form = this.assignments.at(i);
-    const code = form.get('asset_code')?.value?.trim();
-    if (!code) return; // do nothing if empty
-
-    this.assetService.getAssetByCode(code).subscribe({
-      next: (asset: Asset | null) => {
-        if (asset) {
-          // Autofill if found
-          form.patchValue({
-            serial_number: asset.serial_number,
-            asset_type: asset.asset_type,
-            asset_brand: asset.asset_brand,
-            processor: asset.processor,
-            charger_serial: asset.charger_serial || '', // ✅ NEW LINE
-            warranty_start: asset.warranty_start,
-            warranty_end: asset.warranty_end,
-            isNew: false
-          });
-        } else {
-          // Asset not found → leave form as-is, no warning
-          form.patchValue({ isNew: true });
-        }
-      },
-      error: () => {
-        // Optional: silently ignore backend error, do not show warning
-        form.patchValue({ isNew: true });
-      }
-    });
-  }
-
-
-  /** Submit assignments to backend */
+  /** Submit assignments */
   onSubmit(): void {
     if (this.assignmentForm.invalid) {
       this.snackBar.open('⚠️ Please fill all required fields.', 'Close', { duration: 3000 });
@@ -176,13 +199,14 @@ export class AssignAsset implements OnInit {
         asset_brand: a.asset_brand,
         processor: this.isLaptopOrDesktop(i) ? a.processor : '',
         charger_serial: this.hasCharger(i) ? a.charger_serial : '',
+        cable_type: this.isCables(i) ? a.cable_type : undefined,
         emp_code: parent.emp_code,
         assigned_by: parent.assigned_by,
         psd_id: parent.psd_id,
         assign_date: this.formatDate(a.assign_date),
         assign_remark: a.assign_remark,
-        warranty_start: a.isNew ? this.formatDate(a.warranty_start) : '',
-        warranty_end: a.isNew ? this.formatDate(a.warranty_end) : ''
+        warranty_start: this.isCables(i) ? '' : (a.isNew ? this.formatDate(a.warranty_start) : ''),
+        warranty_end: this.isCables(i) ? '' : (a.isNew ? this.formatDate(a.warranty_end) : '')
       };
 
       payload.push(mainAsset);

@@ -34,10 +34,18 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 })
 export class AddAsset implements OnInit {
   form: FormGroup;
+
   assetTypes: string[] = [
     'Monitor', 'Desktop', 'Mini Desktop', 'Windows Laptop', 'Mac Laptop',
-    'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard', 'Usb Camera', 'Laptop Bag',
-    'Wifi Device', 'Docking Station', 'UPS', 'Jio/Airtel Modem', 'Others'
+    'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard',
+    'Usb Camera', 'Cables', 'Laptop Bag', 'Wifi Device', 'Docking Station',
+    'UPS', 'Jio/Airtel Modem', 'Others'
+  ];
+
+  cableTypes: string[] = [
+    'DESKTOP POWER CABLE', 'LAPTOP POWER CABLE', 'HDMI CABLE', 'DP CABLE',
+    'HDMI TO VGA CABLE', 'VGA TO HDMI CABLE', 'VGA CABLE', 'WIFI EXTENDER',
+    'POWER CABLE EXTENSION', 'LAN CABLE'
   ];
 
   constructor(
@@ -47,10 +55,11 @@ export class AddAsset implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.form = this.fb.group({
-      asset_code: ['', Validators.required],
-      serial_number: ['', Validators.required],
       asset_type: ['', Validators.required],
-      asset_brand: ['', Validators.required],
+      asset_code: [''],
+      serial_number: [''],
+      cable_type: [''],
+      asset_brand: [''],
       processor: [''],
       charger_serial: [''],
       warranty_start: [''],
@@ -60,37 +69,46 @@ export class AddAsset implements OnInit {
 
   ngOnInit(): void { }
 
-  /** Show processor for laptops/desktops */
+  /** Type checks */
   isLaptopOrDesktop(): boolean {
     const type = (this.form.get('asset_type')?.value || '').toLowerCase();
-    return type.includes('laptop') || type.includes('desktop') || type.includes('mini desktop');
+    return type.includes('laptop') || type.includes('desktop');
   }
 
-  /** Show charger only for laptops/desktops */
   hasCharger(): boolean {
     const type = (this.form.get('asset_type')?.value || '').toLowerCase();
     return type.includes('laptop') || type.includes('mini desktop');
   }
 
-  /** Validate unique asset code */
-  onAssetCodeBlur(): void {
-    const code = this.form.get('asset_code')?.value?.trim();
-    if (!code) return;
+  isCable(): boolean {
+    return (this.form.get('asset_type')?.value || '').toLowerCase() === 'cables';
+  }
 
-    this.service.getAssetByCode(code).subscribe({
-      next: (asset: Asset | null) => {
-        if (asset) {
-          this.snackBar.open('⚠️ Asset Code already exists!', 'Close', { duration: 3000 });
-          this.form.get('asset_code')?.setValue('');
-        }
-      },
-      error: () => {
-        // ignore errors, assume asset doesn't exist
-      }
+  /** Handle asset type changes */
+  onAssetTypeChange(): void {
+    const type = this.form.get('asset_type')?.value;
+
+    if (type === 'Cables') {
+      // Default serial number for cables is 'N/A'
+      this.form.patchValue({ serial_number: 'N/A' });
+      this.generateCableAssetCode();
+    } else {
+      // Reset serial number and asset code for other asset types
+      this.form.patchValue({ asset_code: '', serial_number: '' });
+    }
+  }
+
+  /** Auto-generate cable code */
+  generateCableAssetCode(): void {
+    this.service.getAssets().subscribe((assets) => {
+      const cableAssets = assets.filter(a => a.asset_type === 'Cables');
+      const nextNum = cableAssets.length + 1;
+      const code = `C${nextNum.toString().padStart(3, '0')}`;
+      this.form.get('asset_code')?.setValue(code);
     });
   }
 
-  /** Submit new unassigned asset */
+  /** Submit form */
   submit(): void {
     if (this.form.invalid) {
       this.snackBar.open('⚠️ Please fill all required fields.', 'Close', { duration: 3000 });
@@ -98,12 +116,13 @@ export class AddAsset implements OnInit {
     }
 
     const payload: Asset = {
+      asset_type: this.form.value.asset_type,
       asset_code: this.form.value.asset_code,
       serial_number: this.form.value.serial_number,
-      asset_type: this.form.value.asset_type,
       asset_brand: this.form.value.asset_brand,
-      processor: this.isLaptopOrDesktop() ? this.form.value.processor : null,
-      charger_serial: this.hasCharger() ? this.form.value.charger_serial : null,
+      cable_type: this.isCable() ? this.form.value.cable_type : undefined,
+      processor: this.isLaptopOrDesktop() ? this.form.value.processor : undefined,
+      charger_serial: this.hasCharger() ? this.form.value.charger_serial : undefined,
       warranty_start: this.form.value.warranty_start,
       warranty_end: this.form.value.warranty_end
     };
