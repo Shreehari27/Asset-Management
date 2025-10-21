@@ -60,7 +60,7 @@ export class AssignAsset implements OnInit {
     private employeeService: EmployeeService,
     private assetService: AssetService,
     private snackBar: MatSnackBar
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -73,11 +73,11 @@ export class AssignAsset implements OnInit {
     });
   }
 
-  /** Create single assignment form group */
+  /** Create a single assignment row */
   createAssignment(): FormGroup {
     return this.fb.group({
       asset_code: ['', Validators.required],
-      serial_number: [''],
+      serial_number: [''], // will be dynamically validated
       asset_type: ['', Validators.required],
       cable_type: [''],
       asset_brand: [''],
@@ -103,6 +103,7 @@ export class AssignAsset implements OnInit {
     if (this.assignments.length > 1) this.assignments.removeAt(i);
   }
 
+  /** Helpers for UI control visibility */
   isLaptopOrDesktop(i: number): boolean {
     const type = (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase();
     return type.includes('laptop') || type.includes('desktop') || type.includes('mini desktop');
@@ -117,7 +118,37 @@ export class AssignAsset implements OnInit {
     return (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase() === 'cables';
   }
 
-  /** Called when Cable Type changes */
+  /** On asset type change, update validators */
+  onAssetTypeChange(i: number): void {
+    const form = this.assignments.at(i);
+    const assetType = form.get('asset_type')?.value;
+    const serial = form.get('serial_number');
+    const cableType = form.get('cable_type');
+
+    if (assetType && assetType.toLowerCase() === 'cables') {
+      cableType?.setValidators([Validators.required]);
+      serial?.clearValidators();
+      serial?.setValue('N/A');
+    } else {
+      cableType?.clearValidators();
+      serial?.setValidators([Validators.required]);
+    }
+    serial?.updateValueAndValidity();
+    cableType?.updateValueAndValidity();
+
+    // Clear other fields that might be conditionally required
+    if (assetType && assetType.toLowerCase() === 'cables') {
+      form.patchValue({
+        serial_number: 'N/A',
+        processor: '',
+        charger_serial: '',
+        warranty_start: '',
+        warranty_end: ''
+      });
+    }
+  }
+
+  /** On cable type change, load available cables */
   onCableTypeChange(i: number): void {
     const form = this.assignments.at(i);
     const cableType = form.get('cable_type')?.value;
@@ -129,16 +160,15 @@ export class AssignAsset implements OnInit {
         a.cable_type === cableType &&
         a.status === 'available'
       );
-
       form.patchValue({ asset_code: '' });
     });
   }
 
-  /** Autofill asset details if asset code exists, otherwise do nothing */
+  /** Autofill fields for known asset codes */
   onAssetCodeBlur(i: number): void {
     const form = this.assignments.at(i);
     const code = form.get('asset_code')?.value?.trim();
-    if (!code || this.isCables(i)) return; // skip autofill for cables
+    if (!code || this.isCables(i)) return;
 
     this.assetService.getAssetByCode(code).subscribe({
       next: (asset: Asset | null) => {
@@ -161,14 +191,14 @@ export class AssignAsset implements OnInit {
     });
   }
 
-  /** Format date as YYYY-MM-DD */
+  /** Format date safely as YYYY-MM-DD */
   private formatDate(date: any): string {
     if (!date) return '';
     const d = new Date(date);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  /** Load employees from service */
+  /** Load employee data */
   loadEmployees(): void {
     this.employeeService.getEmployees().subscribe({
       next: (res: Employee[]) => {
@@ -179,8 +209,13 @@ export class AssignAsset implements OnInit {
     });
   }
 
-  /** Submit assignments */
+  /** Submit assignment payload */
   onSubmit(): void {
+    // Ensure validators are up to date before checking validity
+    this.assignments.controls.forEach((ctrl, i) => {
+      this.onAssetTypeChange(i);
+    });
+
     if (this.assignmentForm.invalid) {
       this.snackBar.open('⚠️ Please fill all required fields.', 'Close', { duration: 3000 });
       return;
@@ -194,7 +229,7 @@ export class AssignAsset implements OnInit {
 
       const mainAsset: Asset = {
         asset_code: a.asset_code,
-        serial_number: a.serial_number,
+        serial_number: this.isCables(i) ? 'N/A' : a.serial_number,
         asset_type: a.asset_type,
         asset_brand: a.asset_brand,
         processor: this.isLaptopOrDesktop(i) ? a.processor : '',
@@ -211,7 +246,7 @@ export class AssignAsset implements OnInit {
 
       payload.push(mainAsset);
 
-      // Automatically add charger asset if applicable
+      // Auto-assign charger if applicable
       if (this.hasCharger(i) && a.charger_serial) {
         payload.push({
           asset_code: `${a.asset_code}-CH`,
@@ -228,6 +263,7 @@ export class AssignAsset implements OnInit {
       }
     }
 
+    // Submit payload
     this.assignmentService.assignAssets(payload).subscribe({
       next: () => {
         this.snackBar.open('✅ Assets assigned successfully.', 'Close', { duration: 3000 });

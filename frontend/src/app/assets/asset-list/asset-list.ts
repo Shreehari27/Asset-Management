@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { Asset } from '../../shared/models/asset';
 import { AssetService } from '../../services/Sharedasset';
 import { MatTooltip } from '@angular/material/tooltip';
+import { CdkTableModule } from '@angular/cdk/table';
 
 @Component({
   selector: 'app-asset-list',
@@ -29,7 +30,8 @@ import { MatTooltip } from '@angular/material/tooltip';
     MatSelectModule,
     RouterModule,
     FormsModule,
-    MatTooltip
+    MatTooltip,
+    CdkTableModule
   ],
   providers: [AssetService],
   templateUrl: './asset-list.html',
@@ -38,7 +40,10 @@ import { MatTooltip } from '@angular/material/tooltip';
 export class AssetList implements OnInit {
   assets: Asset[] = [];
   filteredAssets: Asset[] = [];
-  displayedColumns: string[] = ['asset_code', 'serial_number', 'asset_type', 'asset_brand', 'status', 'warranty_status', 'actions'];
+  displayedColumns: string[] = [
+    'asset_code', 'serial_number', 'asset_type', 'cable_type',
+    'asset_brand', 'status', 'warranty_status', 'actions'
+  ];
 
   filters = {
     asset_code: '',
@@ -50,8 +55,9 @@ export class AssetList implements OnInit {
 
   assetTypes: string[] = [
     'Monitor', 'Desktop', 'Mini Desktop', 'Windows Laptop', 'Mac Laptop',
-    'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard', 'Usb Camera', 'Laptop Bag',
-    'Wifi Device', 'Docking Station', 'UPS', 'Jio/Airtel Modem', 'Others'
+    'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard',
+    'Usb Camera', 'Cables', 'Laptop Bag', 'Wifi Device', 'Docking Station',
+    'UPS', 'Jio/Airtel Modem', 'Others'
   ];
 
   constructor(private assetService: AssetService, private router: Router) { }

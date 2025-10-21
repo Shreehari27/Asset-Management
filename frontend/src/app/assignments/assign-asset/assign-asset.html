@@ -39,7 +39,7 @@
           <!-- Asset Type -->
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Asset Type</mat-label>
-            <mat-select formControlName="asset_type" required>
+            <mat-select formControlName="asset_type" (selectionChange)="onAssetTypeChange(i)" required>
               <mat-option *ngFor="let t of assetTypes" [value]="t">{{ t }}</mat-option>
             </mat-select>
           </mat-form-field>
@@ -70,7 +70,7 @@
           <!-- Serial Number -->
           <mat-form-field appearance="outline" class="row-field" *ngIf="!isCables(i)">
             <mat-label>Serial Number</mat-label>
-            <input matInput formControlName="serial_number" [required]="a.get('isNew')?.value" />
+            <input matInput formControlName="serial_number" />
           </mat-form-field>
         </div>
 
@@ -83,12 +83,12 @@
 
           <mat-form-field *ngIf="isLaptopOrDesktop(i)" appearance="outline" class="row-field">
             <mat-label>Processor</mat-label>
-            <input matInput formControlName="processor" [required]="a.get('isNew')?.value" />
+            <input matInput formControlName="processor" />
           </mat-form-field>
 
           <mat-form-field *ngIf="hasCharger(i)" appearance="outline" class="row-field">
             <mat-label>Charger Serial Number</mat-label>
-            <input matInput formControlName="charger_serial" [required]="a.get('isNew')?.value" />
+            <input matInput formControlName="charger_serial" />
           </mat-form-field>
         </div>
 
@@ -96,14 +96,14 @@
         <div class="row" *ngIf="!isCables(i)">
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Warranty Start</mat-label>
-            <input matInput [matDatepicker]="ws" formControlName="warranty_start" [required]="a.get('isNew')?.value" />
+            <input matInput [matDatepicker]="ws" formControlName="warranty_start" />
             <mat-datepicker-toggle matSuffix [for]="ws"></mat-datepicker-toggle>
             <mat-datepicker #ws></mat-datepicker>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Warranty End</mat-label>
-            <input matInput [matDatepicker]="we" formControlName="warranty_end" [required]="a.get('isNew')?.value" />
+            <input matInput [matDatepicker]="we" formControlName="warranty_end" />
             <mat-datepicker-toggle matSuffix [for]="we"></mat-datepicker-toggle>
             <mat-datepicker #we></mat-datepicker>
           </mat-form-field>

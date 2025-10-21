@@ -25,10 +25,16 @@ export const assignAsset = async (req, res) => {
         warranty_end,
       } = assignment;
 
+      // ⚙️ Skip serial check for cables (allow 'N/A' or empty)
+      const isCable = asset_type?.toLowerCase() === "cables";
+      const effectiveSerial =
+        !isCable && (!serial_number || serial_number.trim() === "")
+          ? null
+          : serial_number?.trim() || "N/A";
+
       if (
         !psd_id ||
         !asset_code ||
-        !serial_number ||
         !asset_type ||
         !emp_code ||
         !assigned_by ||
@@ -38,10 +44,10 @@ export const assignAsset = async (req, res) => {
         continue;
       }
 
-      // 1️⃣ Check if asset exists
+      // 1️⃣ Check if asset exists (use asset_code only — serial may repeat)
       let [assetRows] = await pool.query(
-        "SELECT * FROM assets WHERE asset_code = ? OR serial_number = ?",
-        [asset_code, serial_number]
+        "SELECT * FROM assets WHERE asset_code = ?",
+        [asset_code]
       );
 
       if (assetRows.length === 0) {
@@ -56,7 +62,16 @@ export const assignAsset = async (req, res) => {
               processor = VALUES(processor),
               warranty_start = VALUES(warranty_start),
               warranty_end = VALUES(warranty_end)`,
-          [asset_code, serial_number, asset_type, asset_brand, processor || null, parent_asset_code || null, warranty_start || null, warranty_end || null]
+          [
+            asset_code,
+            effectiveSerial,
+            asset_type,
+            asset_brand || null,
+            processor || null,
+            parent_asset_code || null,
+            warranty_start || null,
+            warranty_end || null,
+          ]
         );
       } else {
         const existing = assetRows[0];
@@ -77,15 +92,19 @@ export const assignAsset = async (req, res) => {
         [psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark]
       );
 
-      // 3️⃣ Update warranty dates if provided
-      if (warranty_start || warranty_end) {
+      // 3️⃣ Update warranty dates if provided (skip for cables)
+      if (!isCable && (warranty_start || warranty_end)) {
         await pool.query(
           `UPDATE assets SET warranty_start = ?, warranty_end = ? WHERE asset_code = ?`,
           [warranty_start || null, warranty_end || null, asset_code]
         );
       }
 
-      await pool.query(`UPDATE assets SET status = 'assigned' WHERE asset_code = ?`, [asset_code]);
+      // 4️⃣ Mark asset as assigned
+      await pool.query(
+        `UPDATE assets SET status = 'assigned' WHERE asset_code = ?`,
+        [asset_code]
+      );
 
       results.push({ asset_code, message: "✅ Asset assigned successfully" });
     }
@@ -147,15 +166,24 @@ export const returnAsset = async (req, res) => {
     const { return_date, return_remark, return_to } = req.body;
 
     if (!return_date || !return_to)
-      return res.status(400).json({ error: "return_date and return_to are required" });
+      return res
+        .status(400)
+        .json({ error: "return_date and return_to are required" });
 
-    const [active] = await pool.query("SELECT * FROM assignment_active WHERE asset_code = ?", [asset_code]);
+    const [active] = await pool.query(
+      "SELECT * FROM assignment_active WHERE asset_code = ?",
+      [asset_code]
+    );
     if (active.length === 0)
-      return res.status(404).json({ error: "No active assignment found for this asset" });
+      return res
+        .status(404)
+        .json({ error: "No active assignment found for this asset" });
 
     const { psd_id, emp_code } = active[0];
 
-    await pool.query("DELETE FROM assignment_active WHERE asset_code = ?", [asset_code]);
+    await pool.query("DELETE FROM assignment_active WHERE asset_code = ?", [
+      asset_code,
+    ]);
 
     await pool.query(
       `UPDATE assignment_history 
@@ -164,7 +192,10 @@ export const returnAsset = async (req, res) => {
       [return_date, return_remark || "Returned", return_to, asset_code, emp_code, psd_id]
     );
 
-    await pool.query("UPDATE assets SET status = 'available' WHERE asset_code = ?", [asset_code]);
+    await pool.query(
+      "UPDATE assets SET status = 'available' WHERE asset_code = ?",
+      [asset_code]
+    );
 
     res.json({ message: `✅ Asset ${asset_code} returned successfully` });
   } catch (err) {

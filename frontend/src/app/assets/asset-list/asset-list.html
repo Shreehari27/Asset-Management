@@ -72,31 +72,37 @@
 
     <!-- Asset Code -->
     <ng-container matColumnDef="asset_code">
-      <th mat-header-cell *matHeaderCellDef>Asset Code</th>
+      <th mat-header-cell *matHeaderCellDef cdkResizable>Asset Code</th>
       <td mat-cell *matCellDef="let asset">{{ asset.asset_code }}</td>
     </ng-container>
 
     <!-- Serial Number -->
     <ng-container matColumnDef="serial_number">
-      <th mat-header-cell *matHeaderCellDef>Serial Number</th>
+      <th mat-header-cell *matHeaderCellDef cdkResizable>Serial Number</th>
       <td mat-cell *matCellDef="let asset">{{ asset.serial_number }}</td>
     </ng-container>
 
     <!-- Asset Type -->
     <ng-container matColumnDef="asset_type">
-      <th mat-header-cell *matHeaderCellDef>Asset Type</th>
+      <th mat-header-cell *matHeaderCellDef cdkResizable>Asset Type</th>
       <td mat-cell *matCellDef="let asset">{{ asset.asset_type }}</td>
+    </ng-container>
+
+    <!-- Cable Type -->
+    <ng-container matColumnDef="cable_type">
+      <th mat-header-cell *matHeaderCellDef cdkResizable>Cable Type</th>
+      <td mat-cell *matCellDef="let asset">{{ asset.cable_type || '-' }}</td>
     </ng-container>
 
     <!-- Brand -->
     <ng-container matColumnDef="asset_brand">
-      <th mat-header-cell *matHeaderCellDef>Brand</th>
+      <th mat-header-cell *matHeaderCellDef cdkResizable>Brand</th>
       <td mat-cell *matCellDef="let asset">{{ asset.asset_brand || '-' }}</td>
     </ng-container>
 
     <!-- Status -->
     <ng-container matColumnDef="status">
-      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <th mat-header-cell *matHeaderCellDef cdkResizable>Status</th>
       <td mat-cell *matCellDef="let asset">
         <span class="status-chip" [ngClass]="asset.status">{{ asset.status }}</span>
       </td>
@@ -104,7 +110,7 @@
 
     <!-- Warranty Status -->
     <ng-container matColumnDef="warranty_status">
-      <th mat-header-cell *matHeaderCellDef>Warranty</th>
+      <th mat-header-cell *matHeaderCellDef cdkResizable>Warranty</th>
       <td mat-cell *matCellDef="let asset">
         <span
           class="warranty-chip"
@@ -119,7 +125,7 @@
 
     <!-- Modify Action -->
     <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Modify</th>
+      <th mat-header-cell *matHeaderCellDef cdkResizable>Modify</th>
       <td mat-cell *matCellDef="let asset">
         <button
           mat-icon-button
