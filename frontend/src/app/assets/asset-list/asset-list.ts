@@ -12,7 +12,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Asset } from '../../shared/models/asset';
 import { AssetService } from '../../services/Sharedasset';
-import { MatTooltip } from '@angular/material/tooltip';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CdkTableModule } from '@angular/cdk/table';
 
 @Component({
@@ -20,6 +20,7 @@ import { CdkTableModule } from '@angular/cdk/table';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatTableModule,
     MatButtonModule,
     MatCardModule,
@@ -29,8 +30,7 @@ import { CdkTableModule } from '@angular/cdk/table';
     MatOptionModule,
     MatSelectModule,
     RouterModule,
-    FormsModule,
-    MatTooltip,
+    MatTooltipModule,
     CdkTableModule
   ],
   providers: [AssetService],
@@ -40,9 +40,16 @@ import { CdkTableModule } from '@angular/cdk/table';
 export class AssetList implements OnInit {
   assets: Asset[] = [];
   filteredAssets: Asset[] = [];
+
   displayedColumns: string[] = [
-    'asset_code', 'serial_number', 'asset_type', 'cable_type',
-    'asset_brand', 'status', 'warranty_status', 'actions'
+    'asset_code',
+    'serial_number',
+    'asset_type',
+    'cable_type',
+    'asset_brand',
+    'status',
+    'warranty_status',
+    'actions'
   ];
 
   filters = {
@@ -55,12 +62,13 @@ export class AssetList implements OnInit {
 
   assetTypes: string[] = [
     'Monitor', 'Desktop', 'Mini Desktop', 'Windows Laptop', 'Mac Laptop',
-    'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard',
-    'Usb Camera', 'Cables', 'Laptop Bag', 'Wifi Device', 'Docking Station',
-    'UPS', 'Jio/Airtel Modem', 'Others'
+    'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset',
+    'Keyboard', 'Wireless Keyboard', 'Usb Camera', 'Cables',
+    'Laptop Bag', 'Wifi Device', 'Docking Station', 'UPS',
+    'Jio/Airtel Modem', 'Others'
   ];
 
-  constructor(private assetService: AssetService, private router: Router) { }
+  constructor(private assetService: AssetService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadAssets();

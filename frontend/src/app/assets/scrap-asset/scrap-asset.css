@@ -1,38 +1,97 @@
-/* Filters container */
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px; /* space between each filter and button */
-  margin-bottom: 20px;
-  align-items: center; /* vertically center inputs and button */
+:host {
+  display: block;
+  padding: 16px;
 }
 
-/* Individual filter fields */
-.filters mat-form-field {
-  width: 250px;
-  min-width: 250px;
-  height: 56px;
+h2.assignments-header {
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+/* Filters */
+.search-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
 }
 
 /* Reset button */
-.filters button {
-  height: 56px; /* same height as form fields */
-  border-radius: 8px;
-  font-weight: 600;
-  text-transform: none;
-  padding: 0 20px;
-  border: 1px solid #1976d2;
-  color: #1976d2;
-  background: transparent;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: 0.3s ease;
+.search-container button {
+  height: 56px;
 }
 
-.filters button:hover {
-  background-color: #1976d2;
-  color: #fff;
+/* Cards Layout */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+}
+
+.asset-card {
+  border-radius: 12px;
+  padding: 12px;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.asset-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Header inside each card */
+.asset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.asset-header h3 {
+  font-size: 16px;
+  margin: 0;
+  color: #333;
+}
+
+/* Status chip */
+.status-chip {
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.status-chip.available { background: #e0f7e9; color: #1b5e20; }
+.status-chip.assigned { background: #fff3e0; color: #e65100; }
+.status-chip.scrapped { background: #ffebee; color: #b71c1c; }
+.status-chip.repair { background: #e3f2fd; color: #0d47a1; }
+.status-chip.retired { background: #f3e5f5; color: #6a1b9a; }
+
+/* Details section */
+.asset-details {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #444;
+}
+
+.asset-details p {
+  margin: 4px 0;
+}
+
+/* Action button */
+.actions {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.actions button {
+  background: #ffebee;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+  }
 }

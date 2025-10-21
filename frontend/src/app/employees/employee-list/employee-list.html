@@ -1,4 +1,4 @@
-<mat-card>
+<mat-card class="main-card">
   <mat-card-title>Employee Details</mat-card-title>
 
   <!-- 🔍 Search + Filter Bar -->
@@ -36,7 +36,7 @@
   <div class="table-container">
     <mat-table
       [dataSource]="filteredData | filter: searchText: ['name', 'email', 'emp_code']"
-      class="mat-elevation-z8"
+      class="custom-table mat-elevation-z1"
     >
       <!-- Employee Code -->
       <ng-container matColumnDef="emp_code">
@@ -97,7 +97,10 @@
 
       <!-- Table Rows -->
       <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      <mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        class="custom-row"
+      ></mat-row>
     </mat-table>
   </div>
 </mat-card>

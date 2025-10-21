@@ -1,81 +1,85 @@
-.container {
-  padding: 20px;
+:host {
+  display: block;
+  padding: 16px;
+}
+
+h2.assignments-header {
+  margin-bottom: 16px;
+  font-weight: 600;
 }
 
 .add-asset-btn-container {
   text-align: right;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .search-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
-.full-width-table {
+.table-container {
+  overflow-x: auto;
+}
+
+table {
   width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+tr {
+  background-color: #fff;
   border-radius: 8px;
-  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Status Chip */
-.status-chip {
-  text-transform: capitalize;
-  font-weight: 500;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 13px;
-}
-
-.status-chip.available {
-  background: #e0f7e9;
-  color: #1b5e20;
-}
-
-.status-chip.assigned {
-  background: #fff3e0;
-  color: #e65100;
-}
-
-.status-chip.scrapped {
-  background: #ffebee;
-  color: #b71c1c;
-}
-
-.status-chip.repair {
-  background: #e3f2fd;
-  color: #0d47a1;
-}
-
-.status-chip.retired {
-  background: #f3e5f5;
-  color: #6a1b9a;
-}
-
-/* Warranty Chip */
+/* Chips */
+.status-chip,
 .warranty-chip {
-  text-transform: capitalize;
   font-weight: 500;
   padding: 3px 10px;
   border-radius: 12px;
   font-size: 13px;
-  cursor: pointer;
+  text-transform: capitalize;
 }
 
-.warranty-active {
-  background-color: #e0f7e9;
-  color: #1b5e20;
+.status-chip.available { background: #e0f7e9; color: #1b5e20; }
+.status-chip.assigned { background: #fff3e0; color: #e65100; }
+.status-chip.scrapped { background: #ffebee; color: #b71c1c; }
+.status-chip.repair { background: #e3f2fd; color: #0d47a1; }
+.status-chip.retired { background: #f3e5f5; color: #6a1b9a; }
+
+.warranty-active { background: #e0f7e9; color: #1b5e20; }
+.warranty-expired { background: #ffebee; color: #b71c1c; }
+
+/* Fix mat-label overlap issue */
+.search-container mat-form-field .mat-mdc-form-field-label {
+  position: absolute !important;
+  top: -8px !important;
+  left: 12px !important;
+  background: white !important;
+  padding: 0 4px !important;
+  z-index: 10 !important;
+  font-size: 12px !important;
 }
 
-.warranty-expired {
-  background-color: #ffebee;
-  color: #b71c1c;
-}
-
-/* Disabled buttons */
-button[disabled] mat-icon {
-  color: rgba(0, 0, 0, 0.3);
-  cursor: not-allowed;
+/* Responsive */
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+  }
 }

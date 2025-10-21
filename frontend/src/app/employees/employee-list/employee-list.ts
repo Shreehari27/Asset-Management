@@ -35,8 +35,8 @@ export class EmployeeListComponent implements OnInit {
   displayedColumns: string[] = ['emp_code', 'name', 'email', 'isIT', 'status', 'actions'];
   dataSource: Employee[] = [];
   filteredData: Employee[] = [];
-  searchText: string = '';
-  statusFilter: string = '';
+  searchText = '';
+  statusFilter = '';
 
   constructor(private employeeService: EmployeeService) {}
 
@@ -55,20 +55,10 @@ export class EmployeeListComponent implements OnInit {
   }
 
   applyFilter() {
-    if (!this.statusFilter) {
-      this.filteredData = [...this.dataSource];
-    } else {
-      this.filteredData = this.dataSource.filter(
-        (emp) => emp.status?.toLowerCase() === this.statusFilter.toLowerCase()
-      );
-    }
-  }
-
-  deleteEmployee(emp_code: string) {
-    this.employeeService.deleteEmployee(emp_code).subscribe(() => {
-      this.loadEmployees();
-    });
+    this.filteredData = this.statusFilter
+      ? this.dataSource.filter(
+          (emp) => emp.status?.toLowerCase() === this.statusFilter.toLowerCase()
+        )
+      : [...this.dataSource];
   }
 }
-
-export type { Employee };

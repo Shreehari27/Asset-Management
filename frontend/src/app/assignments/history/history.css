@@ -1,52 +1,77 @@
-/* History Page Header */
-.history-header {
-  margin-bottom: 20px;
-  font-size: 22px;
+:host {
+  display: block;
+  padding: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background-color: #f5f5f5;
   font-weight: 600;
-  text-align: center;
-  color: #1976d2;
-  /* Material blue */
 }
 
-/* Filters container */
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 20px;
-  align-items: flex-start;
-  padding-bottom: 5px;
-}
-
-/* Individual filter fields */
-.filters mat-form-field {
-  width: 250px;
-  min-width: 250px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-}
-
-/* Reset button */
-.filters button {
-  height: 56px;
+tr {
+  background-color: #fff;
   border-radius: 8px;
-  font-weight: 600;
-  text-transform: none;
-  padding: 0 20px;
-  border: 1px solid #1976d2;
-  color: #1976d2;
-  background: transparent;
-
-  /* Align the button vertically with form fields */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Hover effect */
-.filters button:hover {
-  background-color: #1976d2;
-  color: #fff;
-  transition: 0.3s ease;
+button {
+  margin: 0 4px;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+/* Filters spacing */
+.search-container {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-container input,
+.search-container select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Mat label fixes */
+.search-container mat-form-field .mat-mdc-form-field-label {
+  position: absolute !important;
+  top: -8px !important;
+  left: 12px !important;
+  background: white !important;
+  padding: 0 4px !important;
+  font-size: 12px !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  display: block !important;
+  z-index: 10 !important;
+}
+
+.search-container mat-form-field {
+  position: relative;
+  height: 72px !important;
+  padding-top: 16px;
+}
+
+.search-container mat-form-field.mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline {
+  top: 0;
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+  }
 }

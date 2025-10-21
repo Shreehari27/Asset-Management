@@ -1,18 +1,16 @@
-mat-card-title {
-  text-align: center;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #1976d2;
-  margin-bottom: 1rem;
+/* 🔷 Main Card Container */
+.main-card {
+  padding: 1.5rem;
+  border-radius: 12px;
 }
 
-/* Search and Filter Bar */
+/* 🔍 Search and Filter Bar */
 .search-filter-bar {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .search-box {
@@ -25,31 +23,56 @@ mat-card-title {
   min-width: 180px;
 }
 
-/* Table Styling */
+mat-card-title {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1976d2;
+  margin-bottom: 1.2rem;
+}
+
+/* 📋 Table Styling */
 .table-container {
   width: 100%;
   overflow-x: auto;
 }
 
+.custom-table {
+  width: 100%;
+  border-spacing: 0 10px !important;
+  border-collapse: separate !important;
+}
+
+/* 🪶 Card-like Rows */
+.custom-row {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-row:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .mat-header-cell {
-  font-weight: bold;
+  font-weight: 600;
+  color: #1976d2;
   background-color: #e3f2fd;
 }
 
+.mat-cell,
+.mat-header-cell {
+  padding: 12px 16px;
+  border-bottom: none;
+}
+
 .mat-row:hover {
-  background-color: #f1f1f1;
+  background-color: transparent !important;
 }
 
-button.mat-icon-button {
-  margin-right: 8px;
-}
-
-.mat-table {
-  min-width: 650px;
-  width: 100%;
-}
-
-/* Status Colors */
+/* ✅ Status Tags */
 .active-status {
   color: green;
   font-weight: 600;
@@ -58,4 +81,14 @@ button.mat-icon-button {
 .inactive-status {
   color: red;
   font-weight: 600;
+}
+
+/* 🧭 Buttons */
+button.mat-icon-button {
+  margin-right: 6px;
+}
+
+button.mat-icon-button:hover {
+  transform: scale(1.1);
+  transition: 0.15s ease;
 }

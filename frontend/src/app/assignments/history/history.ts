@@ -45,12 +45,6 @@ export class History implements OnInit {
     'return_remark'
   ];
 
-  assetTypes: string[] = [
-    'Monitor', 'Desktop', 'Windows Laptop', 'Mac Laptop',
-    'Mouse', 'Keyboard', 'USB Camera', 'WiFi Device',
-    'Headset', 'Laptop Bag', 'UPS', 'Jio/Airtel Modem'
-  ];
-
   filters = {
     asset_type: '',
     asset_brand: '',
@@ -58,10 +52,16 @@ export class History implements OnInit {
     assigned_to: ''
   };
 
+  assetTypes: string[] = [
+    'Monitor', 'Desktop', 'Windows Laptop', 'Mac Laptop',
+    'Mouse', 'Keyboard', 'USB Camera', 'WiFi Device',
+    'Headset', 'Laptop Bag', 'UPS', 'Jio/Airtel Modem'
+  ];
+
   constructor(
     private assignmentService: AssignmentService,
     private employeeService: EmployeeService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -88,26 +88,23 @@ export class History implements OnInit {
   }
 
   filterAssignments() {
-  this.filteredAssignments = this.assignments.filter(a => {
-    const emp = this.employeeMap.get(a.emp_code);
+    this.filteredAssignments = this.assignments.filter(a => {
+      const emp = this.employeeMap.get(a.emp_code);
+      const matchesEmployee = !this.filters.assigned_to ||
+        a.emp_code.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
+        (emp && (
+          emp.name.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
+          emp.email.toLowerCase().includes(this.filters.assigned_to.toLowerCase())
+        ));
 
-    // Match employee by code, name, or email
-    const matchesEmployee = !this.filters.assigned_to ||
-      a.emp_code.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
-      (emp && (
-        emp.name.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
-        emp.email.toLowerCase().includes(this.filters.assigned_to.toLowerCase())
-      ));
-
-    return (
-      (!this.filters.asset_type || a.asset_type.toLowerCase() === this.filters.asset_type.toLowerCase()) &&
-      (!this.filters.asset_brand || a.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase())) &&
-      (!this.filters.serial_number || a.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase())) &&
-      matchesEmployee
-    );
-  });
-}
-
+      return (
+        (!this.filters.asset_type || a.asset_type.toLowerCase() === this.filters.asset_type.toLowerCase()) &&
+        (!this.filters.asset_brand || a.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase())) &&
+        (!this.filters.serial_number || a.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase())) &&
+        matchesEmployee
+      );
+    });
+  }
 
   resetFilter() {
     this.filters = { asset_type: '', asset_brand: '', serial_number: '', assigned_to: '' };
