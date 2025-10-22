@@ -1,58 +1,107 @@
-/* Sidebar glassmorphism */
+/* Sidebar container */
 .sidebar {
   backdrop-filter: blur(20px);
-  background: rgba(30, 30, 30, 0.6); /* translucent dark */
-  background-clip: border-box;
+  background: rgba(30, 30, 30, 0.65);
   border-top-right-radius: 16px;
   border-bottom-right-radius: 16px;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-  padding-top: 8px;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.35);
+  padding: 16px 8px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: width 0.3s ease;
+}
+
+/* Collapsed mode */
+.sidebar.collapsed {
+  width: 80px;
+  gap: 8px;
+}
+
+/* Section headers */
+h3.mat-subheader {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Bubble-style nav items */
 a.mat-list-item.bubble {
   display: flex;
-  align-items: center;     /* center vertically */
-  gap: 8px;               /* restore gap for spacing */
-  border-radius: 16px;
-  margin: 6px 12px;
-  padding: 8px 12px;      /* reduced vertical padding */
-  transition: background 0.3s ease, transform 0.2s ease;
-  justify-content: flex-start; /* align items to start horizontally */
-}
-
-.mat-list-item .mat-icon {
-  color: white;
-  font-size: 28px;
-  line-height: 28px; /* fix vertical alignment */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 8px; /* add margin to separate icon and text */
-}
-
-.mat-list-item span {
-  color: white;
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 28px; /* align with icon */
+  align-items: center;       /* vertically center icon + text */
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  justify-content: flex-start;
+  transition: background 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
+  height: 64px; /* Increased height to accommodate larger icon */
 }
 
 /* Hover effect */
 a.mat-list-item.bubble:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateX(4px);
+  background-color: rgba(255, 255, 255, 0.12);
+  transform: translateX(2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
 }
 
-/* Icon style */
+/* Active state */
+a.mat-list-item.bubble.active {
+  background-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Icon styling */
 .mat-list-item .mat-icon {
-  color: white;
-  font-size: 28px;
+  font-size: 100px;
+  color: #fff;
+  display: block;
+  flex-shrink: 0;
+  margin-top: 0;
 }
 
-/* Text style */
+/* Text styling */
 .mat-list-item span {
-  color: white;
+  color: #fff;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 20px;
+  line-height: 40px;
+  display: block;
+  margin-top: 0;
 }
+
+/* Collapsed mode: hide text */
+.sidebar.collapsed a.mat-list-item span,
+.sidebar.collapsed h3.mat-subheader {
+  display: none;
+}
+
+/* Divider spacing */
+mat-divider {
+  margin: 8px 0;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ripple customization */
+.mat-ripple-element {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    left: -260px;
+    z-index: 1000;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+}
+

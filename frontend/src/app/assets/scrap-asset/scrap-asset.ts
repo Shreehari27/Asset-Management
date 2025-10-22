@@ -13,9 +13,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ScrapDialogComponent } from '../scrap-dialogue/scrap-dialogue';
 import { AssignmentService } from '../../services/assignment';
-import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatCard, MatCardModule } from "@angular/material/card";
+import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-scrap-asset',
@@ -32,10 +31,8 @@ import { MatCard, MatCardModule } from "@angular/material/card";
     MatDialogModule,
     MatTooltipModule,
     MatDatepickerModule,
-    MatNativeDateModule,
-    MatCard,
-    MatCardModule
-],
+    MatNativeDateModule
+  ],
   templateUrl: './scrap-asset.html',
   styleUrls: ['./scrap-asset.css']
 })
@@ -46,33 +43,14 @@ export class ScrapAsset implements OnInit {
   itEmployees: any[] = [];
 
   assetTypes: string[] = [
-    'Monitor',
-    'Desktop',
-    'Windows Laptop',
-    'Mac Laptop',
-    'Wireless Mouse',
-    'Wireless Keyboard',
-    'Mini Desktop',
-    'USB splitter/Extension',
-    'Laptop Charger',
-    'Mouse',
-    'Keyboard',
-    'USB Camera',
-    'WiFi Device',
-    'Headset',
-    'Laptop Bag',
-    'UPS',
-    'Jio/Airtel Modem'
+    'Monitor', 'Desktop', 'Windows Laptop', 'Mac Laptop', 'Wireless Mouse', 'Wireless Keyboard',
+    'Mini Desktop', 'USB splitter/Extension', 'Laptop Charger', 'Mouse', 'Keyboard',
+    'USB Camera', 'WiFi Device', 'Headset', 'Laptop Bag', 'UPS', 'Jio/Airtel Modem'
   ];
 
-  filters = {
-    asset_code: '',
-    serial_number: '',
-    asset_type: '',
-    asset_brand: ''
-  };
+  filters = { asset_code: '', serial_number: '', asset_type: '', asset_brand: '' };
 
-  constructor(private http: HttpClient, private dialog: MatDialog, private assignmentService: AssignmentService) { }
+  constructor(private http: HttpClient, private dialog: MatDialog, private assignmentService: AssignmentService) {}
 
   ngOnInit() {
     this.loadITEmployees();
@@ -96,7 +74,6 @@ export class ScrapAsset implements OnInit {
     });
   }
 
-  // Filter assets automatically as user types/selects
   applyFilter() {
     const code = this.filters.asset_code.toLowerCase();
     const serial = this.filters.serial_number.toLowerCase();
@@ -116,7 +93,6 @@ export class ScrapAsset implements OnInit {
     this.filteredAssets = [...this.assets];
   }
 
-  // Format date for MySQL
   formatForMySQL(date: Date | string) {
     const d = new Date(date);
     return d.toISOString().slice(0, 19).replace('T', ' ');
