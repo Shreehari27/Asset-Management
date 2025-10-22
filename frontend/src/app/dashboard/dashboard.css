@@ -16,12 +16,98 @@
 .stat-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #1565c0; /* blue heading */
+  color: #1565c0;
   margin-bottom: 0.5rem;
 }
 
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #0d47a1; /* darker blue for numbers */
+  color: #0d47a1;
+}
+
+/* Table style for summaries */
+.table-wrapper {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+
+th, td {
+  padding: 10px 14px;
+  text-align: left;
+}
+
+th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+tr {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border-radius: 6px;
+}
+
+
+.dashboard-heading {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0d47a1;
+  margin-bottom: 1.5rem;
+}
+
+.section-heading {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1565c0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.type-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.type-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.type-title {
+  font-weight: 600;
+  color: #0d47a1;
+  margin-bottom: 0.5rem;
+}
+
+.type-details {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+h3 {
+  margin-top: 2rem;
+  color: #0d47a1;
+  border-bottom: 2px solid #bbdefb;
+  padding-bottom: 0.3rem;
+}
+
+.stat-value div {
+  font-size: 0.95rem;
+  color: #333;
 }

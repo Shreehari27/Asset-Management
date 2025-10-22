@@ -1,4 +1,6 @@
-<h2>Dashboard</h2>
+<h2 class="dashboard-heading">Dashboard</h2>
+
+<!-- Summary Cards -->
 <div class="cards">
   <mat-card class="stat-card">
     <div class="stat-title">Total Assets</div>
@@ -16,7 +18,44 @@
   </mat-card>
 
   <mat-card class="stat-card">
+    <div class="stat-title">Scrapped Assets</div>
+    <div class="stat-value">{{ scrappedAssets }}</div>
+  </mat-card>
+
+  <mat-card class="stat-card">
     <div class="stat-title">Employees</div>
     <div class="stat-value">{{ totalEmployees }}</div>
+  </mat-card>
+</div>
+
+<!-- 📊 Asset Type Statistics -->
+<h3 class="section-heading">Asset Type Statistics</h3>
+<div class="cards">
+  <mat-card class="stat-card" *ngFor="let type of objectKeys(assetTypeSummary)">
+    <div class="stat-title">{{ type }}</div>
+    <div class="stat-value">
+      <div>Assigned: {{ assetTypeSummary[type].assigned }}</div>
+      <div>Available: {{ assetTypeSummary[type].available }}</div>
+      <div>Scrapped: {{ assetTypeSummary[type].scrapped }}</div>
+      <div *ngIf="assetTypeSummary[type].ready_to_be_assigned !== undefined">
+        New: {{ assetTypeSummary[type].ready_to_be_assigned }}
+      </div>
+    </div>
+  </mat-card>
+</div>
+
+<!-- 🧩 Cable Type Statistics -->
+<h3 class="section-heading">Cable Type Statistics</h3>
+<div class="cards">
+  <mat-card class="stat-card" *ngFor="let type of objectKeys(cableTypeSummary)">
+    <div class="stat-title">{{ type }}</div>
+    <div class="stat-value">
+      <div>Assigned: {{ cableTypeSummary[type].assigned }}</div>
+      <div>Available: {{ cableTypeSummary[type].available }}</div>
+      <div>Scrapped: {{ cableTypeSummary[type].scrapped }}</div>
+      <div *ngIf="cableTypeSummary[type]?.ready_to_be_assigned !== undefined">
+        New: {{ cableTypeSummary[type]?.ready_to_be_assigned }}
+      </div>
+    </div>
   </mat-card>
 </div>

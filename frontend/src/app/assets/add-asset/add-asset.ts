@@ -12,6 +12,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { Router } from '@angular/router';
 import { AssetService, Asset } from '../../services/Sharedasset';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatRadioModule } from '@angular/material/radio';
+
 
 @Component({
   selector: 'app-add-asset',
@@ -27,7 +29,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatRadioModule
   ],
   templateUrl: './add-asset.html',
   styleUrls: ['./add-asset.css']
@@ -43,7 +46,7 @@ export class AddAsset implements OnInit {
   ];
 
   cableTypes: string[] = [
-    'MONITOR POWER CABLE','DESKTOP POWER CABLE', 'LAPTOP POWER CABLE', 'HDMI CABLE', 'DP CABLE',
+    'MONITOR POWER CABLE', 'DESKTOP POWER CABLE', 'LAPTOP POWER CABLE', 'HDMI CABLE', 'DP CABLE',
     'HDMI TO VGA CABLE', 'VGA TO HDMI CABLE', 'VGA CABLE', 'WIFI EXTENDER',
     'POWER CABLE EXTENSION', 'LAN CABLE'
   ];
@@ -63,7 +66,8 @@ export class AddAsset implements OnInit {
       processor: [''],
       charger_serial: [''],
       warranty_start: [''],
-      warranty_end: ['']
+      warranty_end: [''],
+      is_new: ['no', Validators.required]
     });
   }
 
@@ -110,6 +114,8 @@ export class AddAsset implements OnInit {
 
   /** Submit form */
   submit(): void {
+    const isNew = this.form.value.is_new === 'yes';
+    const status = isNew ? 'ready_to_be_assigned' : 'available';
     if (this.form.invalid) {
       this.snackBar.open('⚠️ Please fill all required fields.', 'Close', { duration: 3000 });
       return;
@@ -124,7 +130,8 @@ export class AddAsset implements OnInit {
       processor: this.isLaptopOrDesktop() ? this.form.value.processor : undefined,
       charger_serial: this.hasCharger() ? this.form.value.charger_serial : undefined,
       warranty_start: this.form.value.warranty_start,
-      warranty_end: this.form.value.warranty_end
+      warranty_end: this.form.value.warranty_end,
+      status
     };
 
     this.service.addNewAsset(payload).subscribe({

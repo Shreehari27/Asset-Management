@@ -209,7 +209,7 @@ export const addAsset = async (req, res) => {
     }
 
     columns.push("status");
-    values.push("available");
+    values.push(req.body.status || "available"); // ✅ use provided status if present
     placeholders.push("?");
 
     const sql = `INSERT INTO assets (${columns.join(", ")}) VALUES (${placeholders.join(", ")})`;
