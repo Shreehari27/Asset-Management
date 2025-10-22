@@ -4,22 +4,42 @@
 
     <!-- Employee + IT Staff -->
     <div class="row">
+      <!-- Employee Autocomplete -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Select Employee</mat-label>
-        <mat-select formControlName="emp_code" required>
-          <mat-option *ngFor="let emp of employees" [value]="emp.emp_code">
+        <input
+          type="text"
+          matInput
+          [matAutocomplete]="empAuto"
+          [(ngModel)]="employeeSearch"
+          (ngModelChange)="filterEmployees()"
+          formControlName="emp_code"
+          required
+        />
+        <mat-autocomplete #empAuto="matAutocomplete" [displayWith]="displayEmp.bind(this)">
+          <mat-option *ngFor="let emp of filteredEmployees" [value]="emp.emp_code">
             {{ emp.name }} ({{ emp.emp_code }})
           </mat-option>
-        </mat-select>
+        </mat-autocomplete>
       </mat-form-field>
 
+      <!-- IT Staff Autocomplete -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Assigned By (IT Staff)</mat-label>
-        <mat-select formControlName="assigned_by" required>
-          <mat-option *ngFor="let it of itPersons" [value]="it.emp_code">
+        <input
+          type="text"
+          matInput
+          [matAutocomplete]="itAuto"
+          [(ngModel)]="itSearch"
+          (ngModelChange)="filterItPersons()"
+          formControlName="assigned_by"
+          required
+        />
+        <mat-autocomplete #itAuto="matAutocomplete" [displayWith]="displayEmp.bind(this)">
+          <mat-option *ngFor="let it of filteredItPersons" [value]="it.emp_code">
             {{ it.name }} ({{ it.emp_code }})
           </mat-option>
-        </mat-select>
+        </mat-autocomplete>
       </mat-form-field>
     </div>
 
@@ -36,23 +56,41 @@
       <div *ngFor="let a of assignments.controls; let i = index" [formGroupName]="i" class="assignment-row">
 
         <div class="row">
-          <!-- Asset Type -->
+          <!-- Asset Type Autocomplete -->
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Asset Type</mat-label>
-            <mat-select formControlName="asset_type" (selectionChange)="onAssetTypeChange(i)" required>
-              <mat-option *ngFor="let t of assetTypes" [value]="t">{{ t }}</mat-option>
-            </mat-select>
+            <input
+              type="text"
+              matInput
+              [matAutocomplete]="assetAuto"
+              [(ngModel)]="assetTypeSearch[i]"
+              (ngModelChange)="filterAssetTypes(i)"
+              formControlName="asset_type"
+              required
+            />
+            <mat-autocomplete #assetAuto="matAutocomplete" (optionSelected)="onAssetTypeChange(i)">
+              <mat-option *ngFor="let t of filteredAssetTypes[i]" [value]="t">{{ t }}</mat-option>
+            </mat-autocomplete>
           </mat-form-field>
 
-          <!-- Cable Type -->
+          <!-- Cable Type Autocomplete (if cables) -->
           <mat-form-field *ngIf="isCables(i)" appearance="outline" class="row-field">
             <mat-label>Cable Type</mat-label>
-            <mat-select formControlName="cable_type" (selectionChange)="onCableTypeChange(i)" required>
-              <mat-option *ngFor="let c of cableTypes" [value]="c">{{ c }}</mat-option>
-            </mat-select>
+            <input
+              type="text"
+              matInput
+              [matAutocomplete]="cableAuto"
+              [(ngModel)]="cableTypeSearch[i]"
+              (ngModelChange)="filterCableTypes(i)"
+              formControlName="cable_type"
+              required
+            />
+            <mat-autocomplete #cableAuto="matAutocomplete" (optionSelected)="onCableTypeChange(i)">
+              <mat-option *ngFor="let c of filteredCableTypes[i]" [value]="c">{{ c }}</mat-option>
+            </mat-autocomplete>
           </mat-form-field>
 
-          <!-- Asset Code -->
+          <!-- Asset Code for cables -->
           <mat-form-field *ngIf="isCables(i)" appearance="outline" class="row-field">
             <mat-label>Asset Code</mat-label>
             <mat-select formControlName="asset_code" required>
@@ -62,6 +100,7 @@
             </mat-select>
           </mat-form-field>
 
+          <!-- Asset Code for non-cables -->
           <mat-form-field *ngIf="!isCables(i)" appearance="outline" class="row-field">
             <mat-label>Asset Code</mat-label>
             <input matInput formControlName="asset_code" (blur)="onAssetCodeBlur(i)" required />
@@ -98,7 +137,7 @@
           </mat-form-field>
         </div>
 
-        <!-- Warranty Dates (hidden for cables) -->
+        <!-- Warranty Dates -->
         <div class="row" *ngIf="!isCables(i)">
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Warranty Start</mat-label>

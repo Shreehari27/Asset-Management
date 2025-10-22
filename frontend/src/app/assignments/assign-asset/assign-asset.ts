@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AssignmentService } from '../../services/assignment';
 import { EmployeeService, Employee } from '../../services/employee';
+import { AssetService, Asset } from '../../services/Sharedasset';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,7 +12,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDividerModule } from '@angular/material/divider';
-import { AssetService, Asset } from '../../services/Sharedasset';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
@@ -21,6 +21,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -39,7 +40,17 @@ export class AssignAsset implements OnInit {
   assignmentForm!: FormGroup;
   employees: Employee[] = [];
   itPersons: Employee[] = [];
+  filteredEmployees: Employee[] = [];
+  filteredItPersons: Employee[] = [];
   availableCables: Asset[] = [];
+
+  /** Searchable fields */
+  employeeSearch = '';
+  itSearch = '';
+  assetTypeSearch: string[] = [];
+  cableTypeSearch: string[] = [];
+  filteredAssetTypes: string[][] = [];
+  filteredCableTypes: string[][] = [];
 
   assetTypes: string[] = [
     'Monitor', 'Desktop', 'Mini Desktop', 'Windows Laptop', 'Mac Laptop',
@@ -60,7 +71,7 @@ export class AssignAsset implements OnInit {
     private employeeService: EmployeeService,
     private assetService: AssetService,
     private snackBar: MatSnackBar
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -71,9 +82,28 @@ export class AssignAsset implements OnInit {
       psd_id: ['', Validators.required],
       assignments: this.fb.array([this.createAssignment()])
     });
+
+    // Initialize first row filters
+    this.assetTypeSearch[0] = '';
+    this.filteredAssetTypes[0] = [...this.assetTypes];
+    this.cableTypeSearch[0] = '';
+    this.filteredCableTypes[0] = [...this.cableTypes];
   }
 
-  /** Create a single assignment row */
+  /** Load employees */
+  loadEmployees(): void {
+    this.employeeService.getEmployees().subscribe({
+      next: (res: Employee[]) => {
+        this.employees = res.filter(e => e.status === 'active');
+        this.itPersons = this.employees.filter(e => e.isIT);
+        this.filteredEmployees = [...this.employees];
+        this.filteredItPersons = [...this.itPersons];
+      },
+      error: err => console.error(err)
+    });
+  }
+
+  /** Form array handling */
   createAssignment(): FormGroup {
     return this.fb.group({
       asset_code: ['', Validators.required],
@@ -97,13 +127,18 @@ export class AssignAsset implements OnInit {
 
   addAssignment(): void {
     this.assignments.push(this.createAssignment());
+    const i = this.assignments.length - 1;
+    this.assetTypeSearch[i] = '';
+    this.filteredAssetTypes[i] = [...this.assetTypes];
+    this.cableTypeSearch[i] = '';
+    this.filteredCableTypes[i] = [...this.cableTypes];
   }
 
   removeAssignment(i: number): void {
     if (this.assignments.length > 1) this.assignments.removeAt(i);
   }
 
-  /** Helpers for UI control visibility */
+  /** Asset type helpers */
   isLaptopOrDesktop(i: number): boolean {
     const type = (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase();
     return type.includes('laptop') || type.includes('desktop') || type.includes('mini desktop');
@@ -118,7 +153,32 @@ export class AssignAsset implements OnInit {
     return (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase() === 'cables';
   }
 
-  /** Update validators based on asset type */
+  /** Search filters */
+  filterEmployees(): void {
+    const term = this.employeeSearch.toLowerCase();
+    this.filteredEmployees = this.employees.filter(e =>
+      e.name.toLowerCase().includes(term) || e.emp_code.toLowerCase().includes(term)
+    );
+  }
+
+  filterItPersons(): void {
+    const term = this.itSearch.toLowerCase();
+    this.filteredItPersons = this.itPersons.filter(it =>
+      it.name.toLowerCase().includes(term) || it.emp_code.toLowerCase().includes(term)
+    );
+  }
+
+  filterAssetTypes(i: number): void {
+    const term = this.assetTypeSearch[i]?.toLowerCase() || '';
+    this.filteredAssetTypes[i] = this.assetTypes.filter(t => t.toLowerCase().includes(term));
+  }
+
+  filterCableTypes(i: number): void {
+    const term = this.cableTypeSearch[i]?.toLowerCase() || '';
+    this.filteredCableTypes[i] = this.cableTypes.filter(c => c.toLowerCase().includes(term));
+  }
+
+  /** Asset type / cable change */
   onAssetTypeChange(i: number): void {
     const form = this.assignments.at(i);
     const assetType = form.get('asset_type')?.value?.toLowerCase();
@@ -139,16 +199,10 @@ export class AssignAsset implements OnInit {
     cableType?.updateValueAndValidity();
 
     if (assetType === 'cables') {
-      form.patchValue({
-        processor: '',
-        charger_serial: '',
-        warranty_start: '',
-        warranty_end: ''
-      });
+      form.patchValue({ processor: '', charger_serial: '', warranty_start: '', warranty_end: '' });
     }
   }
 
-  /** Load available cables */
   onCableTypeChange(i: number): void {
     const form = this.assignments.at(i);
     const cableType = form.get('cable_type')?.value;
@@ -158,13 +212,14 @@ export class AssignAsset implements OnInit {
       this.availableCables = assets.filter(a =>
         a.asset_type.toLowerCase() === 'cables' &&
         a.cable_type === cableType &&
-        a.status === 'available'
+        (a.status === 'available' || a.status === 'ready_to_be_assigned')
       );
       form.patchValue({ asset_code: '' });
     });
   }
 
-  /** Validate asset code for availability */
+
+  /** Asset code blur */
   onAssetCodeBlur(i: number): void {
     const form = this.assignments.at(i);
     const code = form.get('asset_code')?.value?.trim();
@@ -194,7 +249,7 @@ export class AssignAsset implements OnInit {
           form.get('asset_code')?.setErrors(null);
         }
 
-        // Check charger asset if exists
+        // Check charger assignment
         if (this.hasCharger(i) && form.get('charger_serial')?.value) {
           const chargerCode = `${code}-CH`;
           this.assetService.getAssetByCode(chargerCode).subscribe({
@@ -209,34 +264,25 @@ export class AssignAsset implements OnInit {
           });
         }
       },
-      error: () => {
-        form.patchValue({ isNew: true });
-        form.get('asset_code')?.setErrors(null);
-      }
+      error: () => form.get('asset_code')?.setErrors(null)
     });
   }
 
-  /** Format date safely as YYYY-MM-DD */
+  /** Format date */
   private formatDate(date: any): string {
     if (!date) return '';
     const d = new Date(date);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
-  /** Load employee data */
-  loadEmployees(): void {
-    this.employeeService.getEmployees().subscribe({
-      next: (res: Employee[]) => {
-        this.employees = res.filter(e => e.status === 'active');
-        this.itPersons = this.employees.filter(e => e.isIT);
-      },
-      error: err => console.error(err)
-    });
+  displayEmp(empCode: string): string {
+    if (!empCode) return '';
+    const emp = this.employees.find(e => e.emp_code === empCode) || this.itPersons.find(it => it.emp_code === empCode);
+    return emp ? `${emp.name} (${emp.emp_code})` : empCode;
   }
 
-  /** Submit assignment */
+  /** Submit */
   onSubmit(): void {
-    // Refresh validators
     this.assignments.controls.forEach((ctrl, i) => this.onAssetTypeChange(i));
 
     if (this.assignmentForm.invalid) {
@@ -269,7 +315,6 @@ export class AssignAsset implements OnInit {
 
       payload.push(mainAsset);
 
-      // Auto-add charger
       if (this.hasCharger(i) && a.charger_serial) {
         payload.push({
           asset_code: `${a.asset_code}-CH`,
@@ -288,11 +333,8 @@ export class AssignAsset implements OnInit {
 
     this.assignmentService.assignAssets(payload).subscribe({
       next: (res: any) => {
-        // Check if response contains errors
         if (Array.isArray(res) && res.some(r => r.error)) {
-          res.forEach(r => {
-            this.snackBar.open(r.error, 'Close', { duration: 4000 });
-          });
+          res.forEach(r => this.snackBar.open(r.error, 'Close', { duration: 4000 }));
         } else {
           this.snackBar.open('✅ Assets assigned successfully.', 'Close', { duration: 3000 });
           this.assignmentForm.reset();

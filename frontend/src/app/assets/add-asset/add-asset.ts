@@ -12,8 +12,6 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { Router } from '@angular/router';
 import { AssetService, Asset } from '../../services/Sharedasset';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatRadioModule } from '@angular/material/radio';
-
 
 @Component({
   selector: 'app-add-asset',
@@ -29,8 +27,7 @@ import { MatRadioModule } from '@angular/material/radio';
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatSnackBarModule,
-    MatRadioModule
+    MatSnackBarModule
   ],
   templateUrl: './add-asset.html',
   styleUrls: ['./add-asset.css']
@@ -66,14 +63,12 @@ export class AddAsset implements OnInit {
       processor: [''],
       charger_serial: [''],
       warranty_start: [''],
-      warranty_end: [''],
-      is_new: ['no', Validators.required]
+      warranty_end: ['']
     });
   }
 
   ngOnInit(): void { }
 
-  /** Type checks */
   isLaptopOrDesktop(): boolean {
     const type = (this.form.get('asset_type')?.value || '').toLowerCase();
     return type.includes('laptop') || type.includes('desktop');
@@ -88,21 +83,17 @@ export class AddAsset implements OnInit {
     return (this.form.get('asset_type')?.value || '').toLowerCase() === 'cables';
   }
 
-  /** Handle asset type changes */
   onAssetTypeChange(): void {
     const type = this.form.get('asset_type')?.value;
 
     if (type === 'Cables') {
-      // Default serial number for cables is 'N/A'
       this.form.patchValue({ serial_number: 'N/A' });
       this.generateCableAssetCode();
     } else {
-      // Reset serial number and asset code for other asset types
       this.form.patchValue({ asset_code: '', serial_number: '' });
     }
   }
 
-  /** Auto-generate cable code */
   generateCableAssetCode(): void {
     this.service.getAssets().subscribe((assets) => {
       const cableAssets = assets.filter(a => a.asset_type === 'Cables');
@@ -112,10 +103,7 @@ export class AddAsset implements OnInit {
     });
   }
 
-  /** Submit form */
   submit(): void {
-    const isNew = this.form.value.is_new === 'yes';
-    const status = isNew ? 'ready_to_be_assigned' : 'available';
     if (this.form.invalid) {
       this.snackBar.open('⚠️ Please fill all required fields.', 'Close', { duration: 3000 });
       return;
@@ -131,7 +119,7 @@ export class AddAsset implements OnInit {
       charger_serial: this.hasCharger() ? this.form.value.charger_serial : undefined,
       warranty_start: this.form.value.warranty_start,
       warranty_end: this.form.value.warranty_end,
-      status
+      status: 'ready_to_be_assigned' // ✅ always ready_to_be_assigned
     };
 
     this.service.addNewAsset(payload).subscribe({
