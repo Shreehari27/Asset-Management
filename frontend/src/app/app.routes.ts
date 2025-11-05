@@ -12,8 +12,11 @@ import { EditAsset } from './assets/edit-asset/edit-asset';
 import { AssignAsset } from './assignments/assign-asset/assign-asset';
 import { ScrapAsset } from './assets/scrap-asset/scrap-asset';
 import { AssetModificationComponent } from './assets/asset-modification/asset-modification';
+import { Login } from './login/login';
+import { EmployeeAssignments } from './employees/employee-assignments/employee-assignments';
 
 export const routes: Routes = [
+  { path: 'login', component: Login },
   {
     path: '',
     component: Layout, // ✅ Always render sidebar + content
@@ -36,7 +39,8 @@ export const routes: Routes = [
       // Assignments
       { path: 'assignments/live', component: Live },
       { path: 'assignments/history', component: History },
-      { path: 'assignments/assign', component: AssignAsset }
+      { path: 'assignments/assign', component: AssignAsset },
+      {path: 'employees/:emp_code/assignments', component: EmployeeAssignments }
     ]
   },
   { path: '**', redirectTo: '' }

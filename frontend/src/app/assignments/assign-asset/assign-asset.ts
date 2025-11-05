@@ -55,7 +55,7 @@ export class AssignAsset implements OnInit {
   assetTypes: string[] = [
     'Monitor', 'Desktop', 'Mini Desktop', 'Windows Laptop', 'Mac Laptop',
     'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard',
-    'Usb Camera', 'Cables', 'Laptop Bag', 'Wifi Device', 'Docking Station',
+    'Usb Camera', 'Cables', 'Laptop Bag', 'Wifi Device', 'Docking Station', 
     'UPS', 'Jio/Airtel Modem', 'Others'
   ];
 
@@ -140,13 +140,13 @@ export class AssignAsset implements OnInit {
 
   /** Asset type helpers */
   isLaptopOrDesktop(i: number): boolean {
-    const type = (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase();
-    return type.includes('laptop') || type.includes('desktop') || type.includes('mini desktop');
+    const type = (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase().trim();
+    return ['windows laptop', 'mac laptop', 'desktop', 'mini desktop'].includes(type);
   }
 
   hasCharger(i: number): boolean {
-    const type = (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase();
-    return type.includes('laptop') || type.includes('mini desktop');
+    const type = (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase().trim();
+    return ['windows laptop', 'mac laptop', 'mini desktop'].includes(type);
   }
 
   isCables(i: number): boolean {

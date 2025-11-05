@@ -6,11 +6,12 @@ import {
   addEmployee,
   updateEmployee,
 } from "../controllers/employeeController.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Get all employees
-router.get("/", getEmployees);
+router.get("/", verifyToken, getEmployees);
 
 // Get IT employees only
 router.get("/ITR", getITEmployees);
@@ -19,9 +20,9 @@ router.get("/ITR", getITEmployees);
 router.get("/:emp_code", getEmployeeById);
 
 // Add employee
-router.post("/", addEmployee);
+router.post("/", verifyToken, addEmployee);
 
 // Update employee by emp_code
-router.patch("/:emp_code", updateEmployee);
+router.patch("/:emp_code", verifyToken, updateEmployee);
 
 export default router;

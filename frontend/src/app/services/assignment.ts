@@ -35,9 +35,16 @@ export class AssignmentService {
       return_to: payload.return_to
     });
   }
+  getLiveAssignmentsByEmp(empCode: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/live/${empCode}`);
+  }
 
-
-
+  generateGatePass(data: any) {
+    return this.http.post(
+      `${environment.baseUrl}/gatepass/generate`, data,
+      { responseType: 'blob' } // important for docx download
+    );
+  }
 }
 
 export type { Assignment };

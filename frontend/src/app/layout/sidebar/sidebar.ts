@@ -7,11 +7,12 @@ import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatRippleModule } from '@angular/material/core';
+import { MatFormFieldModule } from "@angular/material/form-field";
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterLink, NzMenuModule, NzIconModule, NzLayoutModule, MatListModule, MatIconModule, MatRippleModule],
+  imports: [CommonModule, RouterLink, NzMenuModule, NzIconModule, NzLayoutModule, MatListModule, MatIconModule, MatRippleModule, MatFormFieldModule],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.css']
 })

@@ -76,7 +76,7 @@ CREATE INDEX idx_history_emp ON assignment_history(emp_code);
 -- Modify status to include 'ready_to_be_assigned'
 ALTER TABLE assets 
 MODIFY COLUMN status 
-ENUM('available', 'ready_to_be_assigned', 'assigned', 'scrapped', 'repair', 'retired') 
+ENUM('available', 'ready_to_be_assigned', 'assigned', 'scrapped') 
 DEFAULT 'available';
 
 ALTER TABLE assets
@@ -101,4 +101,5 @@ select * from asset_scrap;
 select * from asset_modifications;
 
 DESCRIBE assets;
+describe assignment_active;
 

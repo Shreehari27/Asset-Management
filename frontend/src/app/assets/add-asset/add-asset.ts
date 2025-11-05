@@ -70,13 +70,13 @@ export class AddAsset implements OnInit {
   ngOnInit(): void { }
 
   isLaptopOrDesktop(): boolean {
-    const type = (this.form.get('asset_type')?.value || '').toLowerCase();
-    return type.includes('laptop') || type.includes('desktop');
+    const type = (this.form.get('asset_type')?.value || '').toLowerCase().trim();
+    return ['windows laptop', 'mac laptop', 'desktop', 'mini desktop'].includes(type);
   }
 
   hasCharger(): boolean {
-    const type = (this.form.get('asset_type')?.value || '').toLowerCase();
-    return type.includes('laptop') || type.includes('mini desktop');
+    const type = (this.form.get('asset_type')?.value || '').toLowerCase().trim();
+    return ['windows laptop', 'mac laptop', 'mini desktop'].includes(type);
   }
 
   isCable(): boolean {

@@ -155,40 +155,34 @@ export const getAssignmentHistory = async (req, res) => {
 };
 
 // =============================
-// ➤ Return Asset
+// ✅ Return Asset (Fixed: Prevent duplicate history entry)
 // =============================
 export const returnAsset = async (req, res) => {
   try {
     const { asset_code } = req.params;
     const { return_date, return_remark, return_to } = req.body;
 
-    if (!return_date || !return_to)
-      return res
-        .status(400)
-        .json({ error: "return_date and return_to are required" });
+    if (!return_date || !return_to) {
+      return res.status(400).json({ error: "return_date and return_to are required" });
+    }
 
-    const [active] = await pool.query(
-      "SELECT * FROM assignment_active WHERE asset_code = ?",
-      [asset_code]
-    );
-    if (active.length === 0)
-      return res
-        .status(404)
-        .json({ error: "No active assignment found for this asset" });
-
-    const { psd_id, emp_code } = active[0];
-
-    await pool.query("DELETE FROM assignment_active WHERE asset_code = ?", [
-      asset_code,
+    // 1️⃣ Set session variables for trigger
+    await pool.query("SET @return_to = ?, @return_remark = ?", [
+      return_to,
+      return_remark || "Returned",
     ]);
 
-    await pool.query(
-      `UPDATE assignment_history 
-       SET return_date = ?, return_remark = ?, returned_to = ?
-       WHERE asset_code = ? AND emp_code = ? AND psd_id = ? AND return_date IS NULL`,
-      [return_date, return_remark || "Returned", return_to, asset_code, emp_code, psd_id]
+    // 2️⃣ Delete from active — trigger handles history update
+    const [result] = await pool.query(
+      "DELETE FROM assignment_active WHERE asset_code = ?",
+      [asset_code]
     );
 
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "No active assignment found for this asset" });
+    }
+
+    // 3️⃣ Directly update asset status to available (redundant but safe)
     await pool.query(
       "UPDATE assets SET status = 'available' WHERE asset_code = ?",
       [asset_code]
@@ -198,5 +192,51 @@ export const returnAsset = async (req, res) => {
   } catch (err) {
     console.error("❌ Error returning asset:", err);
     res.status(500).json({ error: err.message });
+  }
+};
+
+
+// =============================
+// ➤ Get Live Assignments by Employee Code
+// =============================
+export const getLiveAssignmentsByEmpCode = async (req, res) => {
+  try {
+    const { emp_code } = req.params;
+
+    if (!emp_code) {
+      return res.status(400).json({ error: "Employee code is required" });
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        aa.psd_id,
+        aa.asset_code,
+        a.serial_number,
+        a.asset_type,
+        a.asset_brand,
+        a.processor,
+        e.name AS employee_name,
+        e.emp_code,
+        aa.assigned_by,
+        aa.assign_date,
+        aa.assign_remark
+      FROM assignment_active aa
+      JOIN assets a ON aa.asset_code = a.asset_code
+      JOIN employees e ON aa.emp_code = e.emp_code
+      WHERE e.emp_code = ?
+      ORDER BY aa.assign_date DESC
+      `,
+      [emp_code]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: `No active assignments found for ${emp_code}` });
+    }
+
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Error fetching assignments by employee:", err);
+    res.status(500).json({ error: "Failed to fetch employee's live assignments" });
   }
 };

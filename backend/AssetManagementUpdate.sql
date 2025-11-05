@@ -185,5 +185,62 @@ ALTER TABLE assets DROP INDEX serial_number;
 ALTER TABLE assets DROP INDEX serial_number_UNIQUE;
 SHOW CREATE TABLE assets;
 
+ALTER TABLE assets ADD COLUMN cable_type VARCHAR(100) NULL AFTER processor;
+
+DROP TRIGGER IF EXISTS trg_return_assignment;
+DELIMITER //
+CREATE TRIGGER trg_return_assignment
+AFTER DELETE ON assignment_active
+FOR EACH ROW
+BEGIN
+    UPDATE assignment_history
+    SET 
+        return_date = CURRENT_DATE,
+        return_remark = COALESCE(@return_remark, 'Returned'),
+        returned_to = @return_to
+    WHERE 
+        asset_code = OLD.asset_code
+        AND emp_code = OLD.emp_code
+        AND psd_id = OLD.psd_id
+        AND return_date IS NULL;
+
+    UPDATE assets 
+    SET status = 'available'
+    WHERE asset_code = OLD.asset_code;
+END;
+//
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS trg_return_assignment;
+DELIMITER //
+CREATE TRIGGER trg_return_assignment
+AFTER DELETE ON assignment_active
+FOR EACH ROW
+BEGIN
+    UPDATE assignment_history
+    SET 
+        return_date = CURRENT_DATE,
+        return_remark = COALESCE(@return_remark, 'Returned'),
+        returned_to = @return_to
+    WHERE 
+        asset_code = OLD.asset_code
+        AND emp_code = OLD.emp_code
+        AND psd_id = OLD.psd_id
+        AND return_date IS NULL;
+
+    UPDATE assets 
+    SET status = 'available'
+    WHERE asset_code = OLD.asset_code;
+END;
+//
+DELIMITER ;
 
         
+CREATE TABLE user_logins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    emp_code VARCHAR(20) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (emp_code) REFERENCES employees(emp_code)
+);
