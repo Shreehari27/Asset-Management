@@ -95,11 +95,14 @@ ADD COLUMN processor VARCHAR(100) NULL AFTER asset_brand;
 
 select * FROM assignment_active;
 select * FROM assignment_history;
+describe assignment_history;
 select * from employees;
 select * FROM assets;
 select * from asset_scrap;
 select * from asset_modifications;
+select * from employees;
 
 DESCRIBE assets;
 describe assignment_active;
+select * from asset_scrap;
 

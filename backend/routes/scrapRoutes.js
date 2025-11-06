@@ -6,6 +6,7 @@ import {
   getAssetDetails
 } from "../controllers/scrapController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
+import { requireIT } from "../middleware/requireIT.js";
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ const router = express.Router();
 router.get("/details/:asset_code", verifyToken, getAssetDetails);
 
 // Scrap an asset
-router.post("/", verifyToken, scrapAsset); // Angular posts to /api/scrap
+router.post("/", verifyToken, requireIT, scrapAsset); 
 
 // Get all scrapped assets
 router.get("/", verifyToken, getScrappedAssets);

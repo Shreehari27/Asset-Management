@@ -59,6 +59,8 @@ export const assignAssets = async (req, res) => {
         serial_number,
         asset_type,
         asset_brand,
+        model_name,
+        location,
         processor,
         charger_serial,
         warranty_start,
@@ -133,76 +135,130 @@ const formatDate = (isoString) => {
   return isoString.split("T")[0];
 };
 
-// ➤ Add new asset (with optional charger & cable handling)
+// ➤ Add one or multiple assets(with charger and cable handling)
 export const addAsset = async (req, res) => {
   try {
-    let {
-      asset_code,
-      serial_number,
-      asset_type,
-      asset_brand,
-      processor,
-      charger_serial,
-      warranty_start,
-      warranty_end,
-      cable_type
-    } = req.body;
+    const assets = Array.isArray(req.body) ? req.body : [req.body];
+    const added = [];
+    const skipped = [];
 
-    if (!asset_type) {
-      return res.status(400).json({ error: "asset_type is required" });
-    }
+    // 🔧 Utility: format JS or ISO date into 'YYYY-MM-DD'
+    const toSQLDate = (date) => {
+      if (!date) return null;
+      try {
+        return new Date(date).toISOString().split("T")[0]; // keep only date part
+      } catch {
+        return null;
+      }
+    };
 
-    // ➤ Auto-generate code & serial for Cables
-    if (asset_type.toLowerCase() === "cables") {
-      const [rows] = await pool.query("SELECT COUNT(*) AS count FROM assets WHERE asset_type='Cables'");
-      const nextNum = rows[0].count + 1;
-      asset_code = `C${nextNum.toString().padStart(3, '0')}`;
-      if (!serial_number) serial_number = "N/A";
-    }
+    for (let asset of assets) {
+      let {
+        asset_code,
+        serial_number,
+        asset_type,
+        asset_brand,
+        model_name,
+        location,
+        processor,
+        charger_serial,
+        warranty_start,
+        warranty_end,
+        cable_type,
+        purchase_date,
+        lot_number
+      } = asset;
 
-    if (!asset_code || !serial_number) {
-      return res.status(400).json({ error: "asset_code and serial_number are required" });
-    }
+      if (!asset_type) {
+        skipped.push({ asset_code, reason: "asset_type is required" });
+        continue;
+      }
 
-    // ➤ Check duplicate asset_code
-    const [existing] = await pool.query("SELECT * FROM assets WHERE asset_code = ?", [asset_code]);
-    if (existing.length) return res.status(400).json({ error: "Asset code already exists" });
+      // Auto-code & serial for cables
+      if (asset_type.toLowerCase() === "cables") {
+        const [rows] = await pool.query("SELECT COUNT(*) AS count FROM assets WHERE asset_type='Cables'");
+        const nextNum = rows[0].count + 1;
+        asset_code = `C${nextNum.toString().padStart(3, '0')}`;
+        if (!serial_number) serial_number = "N/A";
+      }
 
-    // ➤ Build columns & values
-    const columns = ["asset_code", "serial_number", "asset_type"];
-    const values = [asset_code, serial_number, asset_type];
-    const placeholders = ["?", "?", "?"];
+      if (!asset_code || !serial_number) {
+        skipped.push({ asset_code, reason: "Missing asset_code or serial_number" });
+        continue;
+      }
 
-    if (asset_type.toLowerCase() === "cables" && cable_type) {
-      columns.push("cable_type");
-      values.push(cable_type);
+      // ✅ Format all dates safely for SQL
+      const sqlPurchaseDate = toSQLDate(purchase_date);
+      const sqlWarrantyStart = toSQLDate(warranty_start);
+      const sqlWarrantyEnd = toSQLDate(warranty_end);
+
+      // Check duplicate asset code
+      const [existing] = await pool.query("SELECT asset_code FROM assets WHERE asset_code = ?", [asset_code]);
+      if (existing.length) {
+        skipped.push({ asset_code, reason: "Asset code already exists" });
+        continue;
+      }
+
+      // Prepare query dynamically
+      const columns = ["asset_code", "serial_number", "asset_type"];
+      const values = [asset_code, serial_number, asset_type];
+      const placeholders = ["?", "?", "?"];
+
+      if (asset_type.toLowerCase() === "cables" && cable_type) {
+        columns.push("cable_type");
+        values.push(cable_type);
+        placeholders.push("?");
+      }
+
+      if (asset_brand) { columns.push("asset_brand"); values.push(asset_brand); placeholders.push("?"); }
+      if (model_name) { columns.push("model_name"); values.push(model_name); placeholders.push("?"); }
+      if (sqlPurchaseDate) { columns.push("purchase_date"); values.push(sqlPurchaseDate); placeholders.push("?"); }
+      if (lot_number) { columns.push("lot_number"); values.push(lot_number); placeholders.push("?"); }
+      if (processor) { columns.push("processor"); values.push(processor); placeholders.push("?"); }
+      if (location) { columns.push("location"); values.push(location); placeholders.push("?"); }
+
+      columns.push("warranty_start");
+      values.push(sqlWarrantyStart);
       placeholders.push("?");
+
+      columns.push("warranty_end");
+      values.push(sqlWarrantyEnd);
+      placeholders.push("?");
+
+
+      columns.push("status");
+      values.push("ready_to_be_assigned");
+      placeholders.push("?");
+
+      const sql = `INSERT INTO assets (${columns.join(", ")}) VALUES (${placeholders.join(", ")})`;
+      await pool.query(sql, values);
+
+      // Add charger if needed
+      // Add charger if laptop or mini desktop — inherit warranty
+      if ((asset_type.toLowerCase().includes("laptop") || asset_type.toLowerCase().includes("mini desktop")) && charger_serial) {
+        const chargerCode = `${asset_code}-CH`;
+
+        await pool.query(
+          `INSERT INTO assets 
+        (asset_code, serial_number, asset_type, asset_brand, parent_asset_code, location, warranty_start, warranty_end, status)
+        VALUES (?, ?, 'Charger', ?, ?, ?, ?, ?, 'ready_to_be_assigned')`,
+          [
+            chargerCode,
+            charger_serial,
+            asset_brand || null,
+            asset_code,
+            location || 'EmployeeWFH',
+            sqlWarrantyStart || null,
+            sqlWarrantyEnd || null
+          ]
+        );
+      }
+
+
+      added.push({ asset_code, message: "✅ Added successfully" });
     }
 
-    if (asset_brand) { columns.push("asset_brand"); values.push(asset_brand); placeholders.push("?"); }
-    if (processor) { columns.push("processor"); values.push(processor); placeholders.push("?"); }
-    if (warranty_start) { columns.push("warranty_start"); values.push(formatDate(warranty_start)); placeholders.push("?"); }
-    if (warranty_end) { columns.push("warranty_end"); values.push(formatDate(warranty_end)); placeholders.push("?"); }
-
-    // ✅ Force status to ready_to_be_assigned
-    columns.push("status");
-    values.push("ready_to_be_assigned");
-    placeholders.push("?");
-
-    const sql = `INSERT INTO assets (${columns.join(", ")}) VALUES (${placeholders.join(", ")})`;
-    await pool.query(sql, values);
-
-    // ➤ Insert charger if applicable
-    if ((asset_type.toLowerCase().includes("laptop") || asset_type.toLowerCase().includes("mini desktop")) && charger_serial) {
-      const chargerCode = `${asset_code}-CH`;
-      await pool.query(
-        `INSERT INTO assets (asset_code, serial_number, asset_type, asset_brand, parent_asset_code, status)
-         VALUES (?, ?, 'Charger', ?, ?, 'ready_to_be_assigned')`,
-        [chargerCode, charger_serial, asset_brand || null, asset_code]
-      );
-    }
-
-    res.json({ message: "✅ Asset added successfully", asset_code });
+    res.json({ added, skipped });
   } catch (err) {
     console.error("❌ Failed to add asset:", err);
     res.status(500).json({ error: "Failed to add asset" });
@@ -210,15 +266,14 @@ export const addAsset = async (req, res) => {
 };
 
 
-
-
-
 // ====================================================
 // ➤ Add modification record
 // ====================================================
 export const addAssetModification = async (req, res) => {
   try {
-    const { asset_code, modified_by, modification } = req.body;
+    const { asset_code, modification } = req.body;
+    const modified_by = req.user?.emp_code; // ✅ from token
+
 
     if (!asset_code || !modified_by || !modification) {
       return res.status(400).json({ error: "asset_code, modified_by, and modification are required" });

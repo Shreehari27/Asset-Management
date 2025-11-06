@@ -10,10 +10,11 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatCardModule } from "@angular/material/card";
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCardModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -27,7 +28,7 @@ export class Login implements OnInit {
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -35,6 +36,11 @@ export class Login implements OnInit {
       password: ['', Validators.required],
     });
   }
+
+  goToForgot() {
+    this.router.navigate(['/forgot-password']);
+  }
+
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
@@ -45,7 +51,7 @@ export class Login implements OnInit {
     this.loading = true;
     this.authService.login(this.loginForm.value).subscribe({
       next: (response: any) => {
-        this.authService.setSession(response.token);
+        this.authService.setSession(response.token, response.user);
         this.router.navigate(['/dashboard']);
         this.loading = false;
       },

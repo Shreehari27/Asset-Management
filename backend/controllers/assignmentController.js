@@ -1,12 +1,17 @@
 import pool from "../config/db.js";
 
 // =============================
-// ➤ Assign Asset (bulk + charger + processor)
+// ➤ Assign Asset (only if asset exists)
 // =============================
 export const assignAsset = async (req, res) => {
   try {
     const assignments = Array.isArray(req.body) ? req.body : [req.body];
     const results = [];
+
+    const assignedBy = req.user?.emp_code; // ✅ take from JWT
+    if (!assignedBy) {
+      return res.status(401).json({ error: "Unauthorized: missing emp_code in token" });
+    }
 
     for (const assignment of assignments) {
       const {
@@ -15,91 +20,65 @@ export const assignAsset = async (req, res) => {
         asset_type,
         asset_brand,
         emp_code,
-        assigned_by,
         assign_date,
         assign_remark,
-        parent_asset_code,
         psd_id,
         processor,
         warranty_start,
         warranty_end,
       } = assignment;
 
-      const isCable = asset_type?.toLowerCase() === "cables";
-      const effectiveSerial =
-        !isCable && (!serial_number || serial_number.trim() === "")
-          ? null
-          : serial_number?.trim() || "N/A";
-
-      if (
-        !psd_id ||
-        !asset_code ||
-        !asset_type ||
-        !emp_code ||
-        !assigned_by ||
-        !assign_date
-      ) {
-        results.push({ asset_code, error: "Missing required fields" });
+      if (!psd_id || !asset_code || !emp_code || !assign_date) {
+        results.push({ asset_code, error: "❌ Missing required fields" });
         continue;
       }
 
-      // 1️⃣ Check asset existence & status
+      // 1️⃣ Check if asset exists
       const [assetRows] = await pool.query(
         "SELECT status FROM assets WHERE asset_code = ? LIMIT 1",
         [asset_code]
       );
 
-      if (assetRows.length > 0 && assetRows[0].status === "assigned") {
+      if (assetRows.length === 0) {
+        results.push({
+          asset_code,
+          error: `⚠️ Asset ${asset_code} not found in database — cannot assign.`,
+        });
+        continue;
+      }
+
+      // 2️⃣ Check if asset is already assigned
+      const assetStatus = assetRows[0].status;
+      if (assetStatus === "assigned") {
         results.push({
           asset_code,
           error: `⚠️ Asset ${asset_code} is already assigned to another employee.`,
         });
-        continue; // ✅ Skip assigning this asset
+        continue;
       }
 
-      // 2️⃣ Create or update asset record
+      // 3️⃣ Proceed with assignment — ✅ use assignedBy from token
       await pool.query(
-        `INSERT INTO assets
-          (asset_code, serial_number, asset_type, asset_brand, processor, parent_asset_code, warranty_start, warranty_end, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'available')
-         ON DUPLICATE KEY UPDATE
-            asset_type = VALUES(asset_type),
-            asset_brand = VALUES(asset_brand),
-            processor = VALUES(processor),
-            warranty_start = VALUES(warranty_start),
-            warranty_end = VALUES(warranty_end)`,
-        [
-          asset_code,
-          effectiveSerial,
-          asset_type,
-          asset_brand || null,
-          processor || null,
-          parent_asset_code || null,
-          warranty_start || null,
-          warranty_end || null,
-        ]
-      );
-
-      // 3️⃣ Assign asset
-      await pool.query(
-        `INSERT INTO assignment_active
+        `INSERT INTO assignment_active 
           (psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark]
+        [psd_id, asset_code, emp_code, assignedBy, assign_date, assign_remark]
       );
 
-      // 4️⃣ Update warranty if needed (skip for cables)
-      if (!isCable && (warranty_start || warranty_end)) {
-        await pool.query(
-          `UPDATE assets SET warranty_start = ?, warranty_end = ? WHERE asset_code = ?`,
-          [warranty_start || null, warranty_end || null, asset_code]
-        );
-      }
-
-      // 5️⃣ Finally mark assigned
+      // 4️⃣ Update asset details
       await pool.query(
-        `UPDATE assets SET status = 'assigned' WHERE asset_code = ?`,
-        [asset_code]
+        `UPDATE assets
+         SET serial_number = ?, asset_brand = ?, processor = ?, 
+             warranty_start = ?, warranty_end = ?, status = 'assigned'
+         WHERE asset_code = ?`,
+        [
+          serial_number || null,
+          asset_brand || null,
+          processor || null,
+          warranty_start || null,
+          warranty_end || null,
+          asset_code,
+        ]
       );
 
       results.push({ asset_code, message: "✅ Asset assigned successfully" });
@@ -111,6 +90,8 @@ export const assignAsset = async (req, res) => {
     res.status(500).json({ error: err.message || "Failed to assign asset" });
   }
 };
+
+
 
 
 // =============================
@@ -160,10 +141,11 @@ export const getAssignmentHistory = async (req, res) => {
 export const returnAsset = async (req, res) => {
   try {
     const { asset_code } = req.params;
-    const { return_date, return_remark, return_to } = req.body;
+    const { return_date, return_remark} = req.body;
+    const return_to = req.user?.emp_code; // ✅ from JWT
 
-    if (!return_date || !return_to) {
-      return res.status(400).json({ error: "return_date and return_to are required" });
+    if (!return_date) {
+      return res.status(400).json({ error: "return_date is required" });
     }
 
     // 1️⃣ Set session variables for trigger

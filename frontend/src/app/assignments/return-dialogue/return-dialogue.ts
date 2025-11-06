@@ -10,6 +10,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MatOptionModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AuthService } from '../../services/auth';
 
 interface DialogData {
   assignment: any;
@@ -41,18 +42,21 @@ export class ReturnDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<ReturnDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { employees: any[] }
-  ) {}
+    @Inject(MAT_DIALOG_DATA) public data: { employees: any[] },
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
+
+    const user = this.authService.getUser();
+    const empCode = user?.emp_code;
+
     this.returnForm = this.fb.group({
       return_date: [new Date(), Validators.required],
       return_remark: [''],
-      return_to: ['', Validators.required],
+      return_to: [{ value: empCode, disabled: true }, Validators.required], // ✅ Locked auto-fill
     });
 
-    // Filter employees to only show IT staff
-    this.itStaff = this.data.employees ? this.data.employees.filter((emp) => emp.isIT) : [];
   }
 
   onSubmit(): void {

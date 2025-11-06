@@ -14,11 +14,16 @@ import { generateGatePass } from "./controllers/gatepassController.js";
 dotenv.config();
 const app = express();
 app.use(cors({
-    origin:  ["http://localhost:4200"],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true
-  })); // allow frontend calls
+  origin: ["http://localhost:4200"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true
+})); // allow frontend calls
 app.use(express.json());
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
 
 // Routes
 app.use("/api/employees", employeeRoutes);

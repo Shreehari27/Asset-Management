@@ -32,7 +32,8 @@ export const getScrappedAssets = async (req, res) => {
 // 🔹 Scrap an available asset
 // ============================
 export const scrapAsset = async (req, res) => {
-  const { asset_code, scrap_reason, scrap_date, scrapped_by } = req.body;
+  const { asset_code, scrap_reason, scrap_date } = req.body;
+  const scrapped_by = req.user?.emp_code; // ✅ from JWT
 
   try {
     // 1️⃣ Check current status
@@ -58,8 +59,8 @@ export const scrapAsset = async (req, res) => {
     // 3️⃣ Insert into asset_scrap
     await pool.execute(
       `INSERT INTO asset_scrap 
-        (asset_code, serial_number, asset_type, asset_brand, scrap_date, scrap_reason, scrapped_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    (asset_code, serial_number, asset_type, asset_brand, scrap_date, scrap_reason, scrapped_by)
+   VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         asset.asset_code,
         asset.serial_number,
@@ -67,7 +68,7 @@ export const scrapAsset = async (req, res) => {
         asset.asset_brand,
         formattedDate,
         scrap_reason || null,
-        scrapped_by || "SYSTEM"
+        scrapped_by   // ✅ use token user
       ]
     );
 

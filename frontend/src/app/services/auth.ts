@@ -7,38 +7,52 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-
   private baseUrl = `${environment.baseUrl}/auth`;
 
   constructor(private http: HttpClient) { }
 
-  // 🔐 LOGIN
   login(data: { email: string; password: string }): Observable<any> {
     return this.http.post(`${this.baseUrl}/login`, data);
   }
 
-  // 📝 SIGNUP
   signup(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/signup`, data);
   }
 
-  // 💾 STORE TOKEN IN SESSION (clears when browser closes)
-  setSession(token: string): void {
-    sessionStorage.setItem('token', token);
+  sendResetOTP(email: string) {
+    return this.http.post(`${this.baseUrl}/send-reset-otp`, { email });
   }
 
-  // 🚪 LOGOUT
+  verifyResetOTP(payload: any) {
+    return this.http.post(`${this.baseUrl}/verify-reset-otp`, payload);
+  }
+
+  // Store token+user in session storage (clears when browser closes)
+  setSession(token: string, user: any): void {
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('user', JSON.stringify(user));
+  }
+
   logout(): void {
     sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
   }
 
-  // ✅ CHECK LOGIN STATUS
-  isLoggedIn(): boolean {
-    return !!sessionStorage.getItem('token');
-  }
-
-  // 🔍 GET TOKEN FOR API CALLS (optional helper)
   getToken(): string | null {
     return sessionStorage.getItem('token');
+  }
+
+  getUser(): any | null {
+    const s = sessionStorage.getItem('user');
+    return s ? JSON.parse(s) : null;
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
+  isIT(): boolean {
+    const user = this.getUser();
+    return !!(user && user.isIT);
   }
 }

@@ -12,19 +12,10 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Password</mat-label>
-        <input
-          matInput
-          [type]="hidePassword ? 'password' : 'text'"
-          formControlName="password"
-          placeholder="Enter your password"
-        />
-        <button
-          mat-icon-button
-          matSuffix
-          type="button"
-          (click)="hidePassword = !hidePassword"
-          [attr.aria-label]="'Hide password'"
-        >
+        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+          placeholder="Enter your password" />
+        <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
+          [attr.aria-label]="'Hide password'">
           <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
         <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
@@ -32,13 +23,7 @@
         </mat-error>
       </mat-form-field>
 
-      <button
-        mat-flat-button
-        color="primary"
-        class="full-width"
-        [disabled]="loading"
-        type="submit"
-      >
+      <button mat-flat-button color="primary" class="full-width" [disabled]="loading" type="submit">
         {{ loading ? 'Signing in...' : 'Sign In' }}
       </button>
     </form>
@@ -46,5 +31,10 @@
     <div class="signup-link">
       <p>Don't have an account? <a routerLink="/signup">Sign up</a></p>
     </div>
+
+    <div class="forgot-link">
+      <a (click)="goToForgot()">Forgot Password?</a>
+    </div>
+
   </mat-card>
 </div>

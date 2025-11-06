@@ -1,27 +1,67 @@
 .container {
-  padding: 20px;
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-.container h2 {
+h2 {
   text-align: center;
-  color: #037fb4;
-  margin-bottom: 16px;
+  color: #007cb9;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.asset-card {
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.asset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.asset-header h3 {
+  margin: 0;
+  color: #036c9b;
 }
 
 .row {
   display: flex;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 16px;
   margin-bottom: 16px;
 }
 
 .full-width {
   flex: 1;
-  min-width: 200px;
+  min-width: 250px;
 }
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
+  margin-bottom: 16px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.mat-datepicker-toggle {
+  color: #007cb9;
 }

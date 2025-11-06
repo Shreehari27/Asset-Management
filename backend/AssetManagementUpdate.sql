@@ -244,3 +244,4 @@ CREATE TABLE user_logins (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (emp_code) REFERENCES employees(emp_code)
 );
+select * FROM user_logins;

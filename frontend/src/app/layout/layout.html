@@ -3,7 +3,7 @@
   <header class="header">
     <div class="header-content">
 
-      <!-- Sidebar Toggle Icon (custom SVG instead of nz-icon) -->
+      <!-- Sidebar Toggle Icon -->
       <button class="menu-toggle" (click)="toggleSidebar()">
         <img src="/hamburger-icon.svg" alt="menu" class="menu-icon" />
       </button>
@@ -11,10 +11,23 @@
       <!-- Logo (centered) -->
       <img src="https://www.pippintitle.com/wp-content/uploads/2024/05/Logo-Pippin-Color-Horizontal-RGB.svg" alt="Logo"
         class="logo" />
+
+      <!-- ✅ User Info (right side) -->
+      <div class="user-info" *ngIf="user">
+        <div class="user-details">
+          <span class="user-name">{{ user.name }}</span>
+          <span class="user-code">({{ user.emp_code }})</span>
+          <span *ngIf="user.isIT" class="it-badge">IT Staff</span>
+        </div>
+      </div>
+
+      <!-- ✅ Logout Button -->
+      <button class="logout-btn" (click)="logout()">Logout</button>
     </div>
   </header>
 
-  <!-- Main section (sidebar + content side by side) -->
+
+  <!-- Main section -->
   <div class="main-container">
     <aside class="sidebar" [class.collapsed]="collapsed">
       <app-sidebar [collapsed]="collapsed"></app-sidebar>

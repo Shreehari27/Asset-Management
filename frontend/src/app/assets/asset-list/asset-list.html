@@ -56,11 +56,17 @@
 <div class="table-container mat-elevation-z8">
   <table mat-table [dataSource]="filteredAssets" class="full-width-table">
 
-    <!-- Asset Code -->
+    <!-- Asset Code (with Location Tooltip) -->
     <ng-container matColumnDef="asset_code">
       <th mat-header-cell *matHeaderCellDef>Asset Code</th>
-      <td mat-cell *matCellDef="let asset">{{ asset.asset_code }}</td>
+      <td mat-cell *matCellDef="let asset">
+        <span matTooltip="Location: {{ asset.location ? asset.location : 'Not Set' }}" matTooltipPosition="above"
+          matTooltipClass="tooltip-style" style="cursor: pointer;">
+          {{ asset.asset_code }}
+        </span>
+      </td>
     </ng-container>
+
 
     <!-- Serial Number -->
     <ng-container matColumnDef="serial_number">
@@ -86,6 +92,17 @@
       <td mat-cell *matCellDef="let asset">{{ asset.asset_brand || '-' }}</td>
     </ng-container>
 
+    <!-- 🆕 Model Name -->
+    <ng-container matColumnDef="model_name">
+      <th mat-header-cell *matHeaderCellDef>Model</th>
+      <td mat-cell *matCellDef="let asset">{{ asset.model_name || '-' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="lot_number">
+      <th mat-header-cell *matHeaderCellDef>Lot Number</th>
+      <td mat-cell *matCellDef="let asset">{{ asset.lot_number || '-' }}</td>
+    </ng-container>
+
     <!-- Status -->
     <ng-container matColumnDef="status">
       <th mat-header-cell *matHeaderCellDef>Status</th>
@@ -98,9 +115,8 @@
     <ng-container matColumnDef="warranty_status">
       <th mat-header-cell *matHeaderCellDef>Warranty</th>
       <td mat-cell *matCellDef="let asset">
-        <span class="warranty-chip"
-              [ngClass]="getWarrantyColor(asset)"
-              matTooltip="Start: {{ asset.warranty_start | date:'yyyy-MM-dd' }} | End: {{ asset.warranty_end | date:'yyyy-MM-dd' }}">
+        <span class="warranty-chip" [ngClass]="getWarrantyColor(asset)"
+          matTooltip="Start: {{ asset.warranty_start | date:'yyyy-MM-dd' }} | End: {{ asset.warranty_end | date:'yyyy-MM-dd' }}">
           {{ getWarrantyStatus(asset) }}
         </span>
       </td>
@@ -110,10 +126,8 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Modify</th>
       <td mat-cell *matCellDef="let asset">
-        <button mat-icon-button color="primary"
-                (click)="openModification(asset)"
-                [disabled]="asset.status === 'scrapped' || asset.status === 'retired'"
-                matTooltip="Modify Asset">
+        <button mat-icon-button color="primary" (click)="openModification(asset)"
+          [disabled]="asset.status === 'scrapped' || asset.status === 'retired'" matTooltip="Modify Asset">
           <mat-icon>edit</mat-icon>
         </button>
       </td>

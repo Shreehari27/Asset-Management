@@ -12,14 +12,12 @@
                 <mat-datepicker #picker></mat-datepicker>
             </mat-form-field>
 
+            <!-- Modified By (Auto-filled) -->
             <mat-form-field appearance="outline">
-                <mat-label>Modified By (IT)</mat-label>
-                <mat-select formControlName="modified_by" required>
-                    <mat-option *ngFor="let emp of employees" [value]="emp.emp_code">
-                        {{ emp.name }} ({{ emp.emp_code }})
-                    </mat-option>
-                </mat-select>
+                <mat-label>Modified By (Auto-filled)</mat-label>
+                <input matInput formControlName="modified_by" readonly />
             </mat-form-field>
+
 
             <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Modification Description</mat-label>

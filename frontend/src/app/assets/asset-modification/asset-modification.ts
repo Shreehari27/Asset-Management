@@ -15,6 +15,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { environment } from '../../../environments/environment';
 import { EmployeeService, Employee } from '../../services/employee';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-asset-modification',
@@ -33,7 +34,7 @@ import { EmployeeService, Employee } from '../../services/employee';
     MatNativeDateModule
   ],
   templateUrl: './asset-modification.html',
-  styleUrls: ['./asset-modification.css'] 
+  styleUrls: ['./asset-modification.css']
 })
 export class AssetModificationComponent implements OnInit, OnDestroy {
   assetCode!: string;
@@ -42,14 +43,15 @@ export class AssetModificationComponent implements OnInit, OnDestroy {
   modForm!: FormGroup;
   private routeSub!: Subscription;
 
-  private baseUrl = `${environment.baseUrl}/assets`; 
+  private baseUrl = `${environment.baseUrl}/assets`;
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private empService: EmployeeService,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    public authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.routeSub = this.route.params.subscribe(params => {
@@ -67,9 +69,12 @@ export class AssetModificationComponent implements OnInit, OnDestroy {
   }
 
   initForm() {
+    const user = this.authService.getUser();
+    const empCode = user?.emp_code;
+
     this.modForm = this.fb.group({
       modification_date: [new Date(), Validators.required],
-      modified_by: ['', Validators.required],
+      modified_by: [{ value: empCode, disabled: true }, Validators.required], // ✅ Auto-fill & lock
       modification: ['', Validators.required]
     });
   }

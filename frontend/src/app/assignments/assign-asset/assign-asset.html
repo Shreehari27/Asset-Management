@@ -7,15 +7,8 @@
       <!-- Employee Autocomplete -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Select Employee</mat-label>
-        <input
-          type="text"
-          matInput
-          [matAutocomplete]="empAuto"
-          [(ngModel)]="employeeSearch"
-          (ngModelChange)="filterEmployees()"
-          formControlName="emp_code"
-          required
-        />
+        <input type="text" matInput [matAutocomplete]="empAuto" [(ngModel)]="employeeSearch"
+          (ngModelChange)="filterEmployees()" formControlName="emp_code" required />
         <mat-autocomplete #empAuto="matAutocomplete" [displayWith]="displayEmp.bind(this)">
           <mat-option *ngFor="let emp of filteredEmployees" [value]="emp.emp_code">
             {{ emp.name }} ({{ emp.emp_code }})
@@ -23,24 +16,13 @@
         </mat-autocomplete>
       </mat-form-field>
 
-      <!-- IT Staff Autocomplete -->
+
+      <!-- Assigned By (Auto-filled) -->
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Assigned By (IT Staff)</mat-label>
-        <input
-          type="text"
-          matInput
-          [matAutocomplete]="itAuto"
-          [(ngModel)]="itSearch"
-          (ngModelChange)="filterItPersons()"
-          formControlName="assigned_by"
-          required
-        />
-        <mat-autocomplete #itAuto="matAutocomplete" [displayWith]="displayEmp.bind(this)">
-          <mat-option *ngFor="let it of filteredItPersons" [value]="it.emp_code">
-            {{ it.name }} ({{ it.emp_code }})
-          </mat-option>
-        </mat-autocomplete>
+        <mat-label>Assigned By</mat-label>
+        <input matInput formControlName="assigned_by" readonly />
       </mat-form-field>
+
     </div>
 
     <!-- PSD ID -->
@@ -59,15 +41,8 @@
           <!-- Asset Type Autocomplete -->
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Asset Type</mat-label>
-            <input
-              type="text"
-              matInput
-              [matAutocomplete]="assetAuto"
-              [(ngModel)]="assetTypeSearch[i]"
-              (ngModelChange)="filterAssetTypes(i)"
-              formControlName="asset_type"
-              required
-            />
+            <input type="text" matInput [matAutocomplete]="assetAuto" [(ngModel)]="assetTypeSearch[i]"
+              (ngModelChange)="filterAssetTypes(i)" formControlName="asset_type" required />
             <mat-autocomplete #assetAuto="matAutocomplete" (optionSelected)="onAssetTypeChange(i)">
               <mat-option *ngFor="let t of filteredAssetTypes[i]" [value]="t">{{ t }}</mat-option>
             </mat-autocomplete>
@@ -76,15 +51,8 @@
           <!-- Cable Type Autocomplete (if cables) -->
           <mat-form-field *ngIf="isCables(i)" appearance="outline" class="row-field">
             <mat-label>Cable Type</mat-label>
-            <input
-              type="text"
-              matInput
-              [matAutocomplete]="cableAuto"
-              [(ngModel)]="cableTypeSearch[i]"
-              (ngModelChange)="filterCableTypes(i)"
-              formControlName="cable_type"
-              required
-            />
+            <input type="text" matInput [matAutocomplete]="cableAuto" [(ngModel)]="cableTypeSearch[i]"
+              (ngModelChange)="filterCableTypes(i)" formControlName="cable_type" required />
             <mat-autocomplete #cableAuto="matAutocomplete" (optionSelected)="onCableTypeChange(i)">
               <mat-option *ngFor="let c of filteredCableTypes[i]" [value]="c">{{ c }}</mat-option>
             </mat-autocomplete>

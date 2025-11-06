@@ -15,24 +15,16 @@
     <input matInput formControlName="return_remark" />
   </mat-form-field>
 
-  <!-- Return To (IT Staff Dropdown) -->
+  <!-- Return To (Auto-filled) -->
   <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Return To (IT Staff)</mat-label>
-    <mat-select formControlName="return_to">
-      <mat-option *ngFor="let it of itStaff" [value]="it.emp_code">
-        {{ it.name }} ({{ it.emp_code }})
-      </mat-option>
-    </mat-select>
+    <mat-label>Returned To (Auto-filled)</mat-label>
+    <input matInput formControlName="return_to" readonly />
   </mat-form-field>
+
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button
-    mat-stroked-button
-    color="primary"
-    (click)="onSubmit()"
-    [disabled]="returnForm.invalid"
-  >
+  <button mat-stroked-button color="primary" (click)="onSubmit()" [disabled]="returnForm.invalid">
     Submit
   </button>
   <button mat-button mat-dialog-close>Cancel</button>

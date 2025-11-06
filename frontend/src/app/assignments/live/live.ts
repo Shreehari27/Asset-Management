@@ -12,7 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
 import { Assignment } from '../../shared/models/assignment';
 import { AssignmentService } from '../../services/assignment';
-
+import { AuthService } from '../../services/auth';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ReturnDialogComponent } from '../return-dialogue/return-dialogue';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -78,13 +78,17 @@ export class Live implements OnInit {
   constructor(
     private assignmentService: AssignmentService,
     private employeeService: EmployeeService,
-    private dialog: MatDialog
-  ) {}
+    private dialog: MatDialog,
+    public authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.loadEmployees();
     this.loadAssignments();
     this.loadITEmployees();
+    if (!this.authService.isIT()) {
+      this.displayedColumns = this.displayedColumns.filter(c => c !== 'actions');
+    }
   }
 
   loadEmployees() {
@@ -135,25 +139,25 @@ export class Live implements OnInit {
   }
 
   filterAssignments() {
-  this.filteredAssignments = this.assignments.filter(a => {
-    const emp = this.employeeMap.get(a.emp_code);
+    this.filteredAssignments = this.assignments.filter(a => {
+      const emp = this.employeeMap.get(a.emp_code);
 
-    // Match employee by code, name, or email
-    const matchesEmployee = !this.filters.assigned_to ||
-      a.emp_code.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
-      (emp && (
-        emp.name.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
-        emp.email.toLowerCase().includes(this.filters.assigned_to.toLowerCase())
-      ));
+      // Match employee by code, name, or email
+      const matchesEmployee = !this.filters.assigned_to ||
+        a.emp_code.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
+        (emp && (
+          emp.name.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
+          emp.email.toLowerCase().includes(this.filters.assigned_to.toLowerCase())
+        ));
 
-    return (
-      (!this.filters.asset_type || a.asset_type.toLowerCase() === this.filters.asset_type.toLowerCase()) &&
-      (!this.filters.asset_brand || a.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase())) &&
-      (!this.filters.serial_number || a.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase())) &&
-      matchesEmployee
-    );
-  });
-}
+      return (
+        (!this.filters.asset_type || a.asset_type.toLowerCase() === this.filters.asset_type.toLowerCase()) &&
+        (!this.filters.asset_brand || a.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase())) &&
+        (!this.filters.serial_number || a.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase())) &&
+        matchesEmployee
+      );
+    });
+  }
 
 
   resetFilter() {

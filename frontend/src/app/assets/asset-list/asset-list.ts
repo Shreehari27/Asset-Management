@@ -47,6 +47,8 @@ export class AssetList implements OnInit {
     'asset_type',
     'cable_type',
     'asset_brand',
+    'model_name',
+    'lot_number',
     'status',
     'warranty_status',
     'actions'

@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-scrap-dialogue',
@@ -33,16 +34,18 @@ export class ScrapDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ScrapDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { asset: any, employees: any[] }
-  ) {}
+    @Inject(MAT_DIALOG_DATA) public data: { asset: any, employees: any[] },
+    public authService: AuthService
+  ) { }
 
   ngOnInit(): void {
-    this.itStaff = this.data.employees ? this.data.employees.filter(emp => emp.isIT) : [];
+    const user = this.authService.getUser();
+    const empCode = user?.emp_code;
 
     this.form = this.fb.group({
       scrap_date: [new Date(), Validators.required],
       scrap_reason: ['', Validators.required],
-      scrapped_by: ['', Validators.required]
+      scrapped_by: [{ value: empCode, disabled: true }, Validators.required], // ✅ Auto-filled
     });
   }
 

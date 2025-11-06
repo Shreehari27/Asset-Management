@@ -14,6 +14,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-assign-asset',
@@ -55,7 +56,7 @@ export class AssignAsset implements OnInit {
   assetTypes: string[] = [
     'Monitor', 'Desktop', 'Mini Desktop', 'Windows Laptop', 'Mac Laptop',
     'Mouse', 'Wireless Mouse', 'Headset', 'Wireless Headset', 'Keyboard', 'Wireless Keyboard',
-    'Usb Camera', 'Cables', 'Laptop Bag', 'Wifi Device', 'Docking Station', 
+    'Usb Camera', 'Cables', 'Laptop Bag', 'Wifi Device', 'Docking Station',
     'UPS', 'Jio/Airtel Modem', 'Others'
   ];
 
@@ -70,18 +71,28 @@ export class AssignAsset implements OnInit {
     private assignmentService: AssignmentService,
     private employeeService: EmployeeService,
     private assetService: AssetService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    public authService: AuthService
   ) { }
 
   ngOnInit(): void {
+    const user = this.authService.getUser();
+    const isIT = user?.isIT;
+    const empCode = user?.emp_code;
+
     this.loadEmployees();
 
     this.assignmentForm = this.fb.group({
       emp_code: ['', Validators.required],
-      assigned_by: ['', Validators.required],
+      assigned_by: [{ value: empCode, disabled: true }, Validators.required], // ✅ Locked auto-fill
       psd_id: ['', Validators.required],
       assignments: this.fb.array([this.createAssignment()])
     });
+
+    if (!isIT) {
+      this.assignmentForm.disable();
+    }
+
 
     // Initialize first row filters
     this.assetTypeSearch[0] = '';

@@ -7,6 +7,7 @@ import {
   updateEmployee,
 } from "../controllers/employeeController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
+import { requireIT } from "../middleware/requireIT.js";
 
 const router = express.Router();
 
@@ -20,9 +21,9 @@ router.get("/ITR", getITEmployees);
 router.get("/:emp_code", getEmployeeById);
 
 // Add employee
-router.post("/", verifyToken, addEmployee);
+router.post("/", verifyToken, requireIT, addEmployee);
 
 // Update employee by emp_code
-router.patch("/:emp_code", verifyToken, updateEmployee);
+router.patch("/:emp_code", verifyToken, requireIT, updateEmployee);
 
 export default router;

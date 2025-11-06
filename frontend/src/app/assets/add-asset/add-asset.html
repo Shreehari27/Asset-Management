@@ -1,86 +1,134 @@
 <div class="container">
-  <h2>Add New Asset</h2>
+  <h2>Add Assets</h2>
 
   <form [formGroup]="form" (ngSubmit)="submit()">
+    <div formArrayName="assets">
+      <mat-card *ngFor="let asset of assets.controls; let i = index" [formGroupName]="i" class="asset-card">
+        <div class="asset-header">
+          <h3>Asset {{ i + 1 }}</h3>
+          <button mat-icon-button color="warn" type="button" (click)="removeAssetRow(i)" *ngIf="assets.length > 1">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
 
-    <!-- Asset Type & Code -->
-    <div class="row">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Asset Type</mat-label>
-        <mat-select formControlName="asset_type" (selectionChange)="onAssetTypeChange()" required>
-          <mat-option *ngFor="let t of assetTypes" [value]="t">{{ t }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+        <!-- Asset Type & Code -->
+        <div class="row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Asset Type</mat-label>
+            <mat-select formControlName="asset_type" (selectionChange)="onAssetTypeChange(i)">
+              <mat-option *ngFor="let t of assetTypes" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+          </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Asset Code</mat-label>
-        <input matInput formControlName="asset_code" placeholder="Enter code" required />
-      </mat-form-field>
-    </div>
-    <!-- Serial Number & Brand -->
-    <div class="row">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Serial Number</mat-label>
-        <input matInput formControlName="serial_number" placeholder="Enter serial number" required />
-      </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Asset Code</mat-label>
+            <input matInput formControlName="asset_code" placeholder="Enter asset code" />
+          </mat-form-field>
+        </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Brand</mat-label>
-        <input matInput formControlName="asset_brand" placeholder="Enter brand" />
-      </mat-form-field>
-    </div>
+        <!-- Serial & Brand -->
+        <div class="row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Serial Number</mat-label>
+            <input matInput formControlName="serial_number" placeholder="Enter serial number" />
+          </mat-form-field>
 
-    <!-- Cable Type (if Cables) -->
-    <div class="row" *ngIf="isCable()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Cable Type</mat-label>
-        <mat-select formControlName="cable_type" required>
-          <mat-option *ngFor="let c of cableTypes" [value]="c">{{ c }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Brand</mat-label>
+            <input matInput formControlName="asset_brand" placeholder="Enter brand" />
+          </mat-form-field>
+        </div>
 
-    <!-- Processor (if Laptop/Desktop) -->
-    <div class="row" *ngIf="isLaptopOrDesktop()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Processor</mat-label>
-        <input matInput formControlName="processor" placeholder="e.g. Intel i5 / Ryzen 7" />
-      </mat-form-field>
-    </div>
+        <!-- Model Name -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Model Name</mat-label>
+          <input matInput formControlName="model_name" placeholder="e.g. SE2425H" />
+        </mat-form-field>
 
-    <!-- Charger Serial Number (if Laptop/Mini Desktop) -->
-    <div class="row" *ngIf="hasCharger()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Charger Serial Number</mat-label>
-        <input matInput formControlName="charger_serial" placeholder="Enter charger serial number" />
-      </mat-form-field>
-    </div>
 
-    <!-- Warranty Start & End -->
-    <div class="row" *ngIf="!isCable()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Warranty Start</mat-label>
-        <input matInput [matDatepicker]="ws" formControlName="warranty_start" />
-        <mat-datepicker-toggle matSuffix [for]="ws"></mat-datepicker-toggle>
-        <mat-datepicker #ws></mat-datepicker>
-      </mat-form-field>
+        <!-- Cable Type -->
+        <div class="row" *ngIf="isCable(i)">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Cable Type</mat-label>
+            <mat-select formControlName="cable_type">
+              <mat-option *ngFor="let c of cableTypes" [value]="c">{{ c }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Warranty End</mat-label>
-        <input matInput [matDatepicker]="we" formControlName="warranty_end" />
-        <mat-datepicker-toggle matSuffix [for]="we"></mat-datepicker-toggle>
-        <mat-datepicker #we></mat-datepicker>
-      </mat-form-field>
+        <!-- Processor -->
+        <div class="row" *ngIf="isLaptopOrDesktop(i)">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Processor</mat-label>
+            <input matInput formControlName="processor" placeholder="e.g. Intel i5 / Ryzen 7" />
+          </mat-form-field>
+        </div>
+
+        <!-- Charger -->
+        <div class="row" *ngIf="hasCharger(i)">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Charger Serial</mat-label>
+            <input matInput formControlName="charger_serial" placeholder="Enter charger serial number" />
+          </mat-form-field>
+        </div>
+
+        <!-- Purchase Date & Lot Number -->
+        <div class="row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Purchase Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="purchase_date"
+              placeholder="Select purchase date" />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="asset.get('purchase_date')?.hasError('required')">
+              Purchase date is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Lot Number (Auto-generated)</mat-label>
+            <input matInput formControlName="lot_number" placeholder="Auto-generated" readonly />
+            <mat-hint align="start">Generated from Purchase Date</mat-hint>
+          </mat-form-field>
+
+        </div>
+
+        <!-- Warranty -->
+        <div class="row" *ngIf="!isCable(i)">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Warranty Start</mat-label>
+            <input matInput [matDatepicker]="ws" formControlName="warranty_start" placeholder="Select start date" />
+            <mat-datepicker-toggle matSuffix [for]="ws"></mat-datepicker-toggle>
+            <mat-datepicker #ws></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Warranty End</mat-label>
+            <input matInput [matDatepicker]="we" formControlName="warranty_end" placeholder="Select end date" />
+            <mat-datepicker-toggle matSuffix [for]="we"></mat-datepicker-toggle>
+            <mat-datepicker #we></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <!-- Location Dropdown -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Location</mat-label>
+          <mat-select formControlName="location">
+            <mat-option *ngFor="let loc of locations" [value]="loc">
+              {{ loc }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+
+      </mat-card>
     </div>
 
     <!-- Action Buttons -->
     <div class="actions">
-      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Add Asset</button>
+      <button mat-stroked-button color="accent" type="button" (click)="addAssetRow()">➕ Add Another Asset</button>
+      <button mat-raised-button color="primary" type="submit">Save All</button>
       <button mat-raised-button color="warn" type="button" (click)="cancel()">Cancel</button>
     </div>
-
-    
-
-
   </form>
 </div>

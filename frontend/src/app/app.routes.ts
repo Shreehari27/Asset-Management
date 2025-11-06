@@ -14,34 +14,43 @@ import { ScrapAsset } from './assets/scrap-asset/scrap-asset';
 import { AssetModificationComponent } from './assets/asset-modification/asset-modification';
 import { Login } from './login/login';
 import { EmployeeAssignments } from './employees/employee-assignments/employee-assignments';
+import { ForgotPassword } from './forgot-password/forgot-password';
+import { Signup } from './sign-up/sign-up';
+import { authGuard } from './auth.guard';
+import { itGuard } from './it.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
+  { path: 'forgot-password', component: ForgotPassword },
+  { path: 'signup', component: Signup },
+
   {
     path: '',
     component: Layout, // ✅ Always render sidebar + content
+    canActivate: [authGuard], // ✅ Protect all child routes₹
     children: [
       { path: '', component: Dashboard },
 
       // Assets
       { path: 'assets', component: AssetList },
-      { path: 'assets/add', component: AddAsset },
-      { path: 'assets/edit/:id', component: EditAsset },
-      { path: 'assets/modify/:assetCode', component: AssetModificationComponent },
-      { path: 'assignments/scrap', component: ScrapAsset },
+      { path: 'assets/add', component: AddAsset, canActivate: [itGuard] },
+      { path: 'assets/edit/:id', component: EditAsset, canActivate: [itGuard] },
+      { path: 'assets/modify/:assetCode', component: AssetModificationComponent, canActivate: [itGuard] },
+      { path: 'assignments/scrap', component: ScrapAsset, canActivate: [itGuard] },
 
 
       // Employees
       { path: 'employees', component: EmployeeListComponent },
-      { path: 'employees/add', component: AddEmployee },
-      { path: 'employees/edit/:id', component: EditEmployee },
+      { path: 'employees/add', component: AddEmployee, canActivate: [itGuard] },
+      { path: 'employees/edit/:id', component: EditEmployee, canActivate: [itGuard] },
 
       // Assignments
       { path: 'assignments/live', component: Live },
       { path: 'assignments/history', component: History },
-      { path: 'assignments/assign', component: AssignAsset },
-      {path: 'employees/:emp_code/assignments', component: EmployeeAssignments }
+      { path: 'assignments/assign', component: AssignAsset, canActivate: [itGuard] },
+      { path: 'employees/:emp_code/assignments', component: EmployeeAssignments }
     ]
   },
+
   { path: '**', redirectTo: '' }
 ];

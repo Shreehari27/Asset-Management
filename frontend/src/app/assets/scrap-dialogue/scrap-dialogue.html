@@ -16,15 +16,12 @@
         <input matInput formControlName="scrap_reason" />
     </mat-form-field>
 
-    <!-- Scrapped By (IT Staff Dropdown) -->
+    <!-- Scrapped By (Auto-filled) -->
     <mat-form-field appearance="outline" class="full-width">
-        <mat-label for="scrappedBy">Scrapped By (IT)</mat-label>
-        <mat-select id="scrappedBy" formControlName="scrapped_by">
-            <mat-option *ngFor="let it of itStaff" [value]="it.emp_code">
-                {{ it.name }} ({{ it.emp_code }})
-            </mat-option>
-        </mat-select>
+        <mat-label>Scrapped By (Auto-filled)</mat-label>
+        <input matInput formControlName="scrapped_by" readonly />
     </mat-form-field>
+
 
 </mat-dialog-content>
 
