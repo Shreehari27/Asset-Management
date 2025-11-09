@@ -32,6 +32,10 @@ export const getScrappedAssets = async (req, res) => {
 // 🔹 Scrap an available asset
 // ============================
 export const scrapAsset = async (req, res) => {
+  if (req.user.role !== 'IT') {
+    return res.status(403).json({ message: 'Access denied. IT role required.' });
+  }
+
   const { asset_code, scrap_reason, scrap_date } = req.body;
   const scrapped_by = req.user?.emp_code; // ✅ from JWT
 

@@ -1,3 +1,9 @@
+.dashboard-container {
+  background: white;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -110,4 +116,30 @@ h3 {
 .stat-value div {
   font-size: 0.95rem;
   color: #333;
+}
+
+
+.report-accordion {
+  margin-top: 2rem;
+  border-radius: 12px;
+  background: #fafafa;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+mat-expansion-panel {
+  background: white;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+mat-expansion-panel-header {
+  font-weight: 600;
+  color: #0d47a1;
+  font-size: 1.1rem;
+}
+
+.sub-heading {
+  margin-top: 1.2rem;
+  font-weight: 600;
+  color: #1565c0;
 }

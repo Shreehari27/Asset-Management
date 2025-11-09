@@ -1,5 +1,7 @@
-<h2>Edit Employee</h2>
+<h2 class="page-title">Edit Employee</h2>
+
 <form [formGroup]="form" (ngSubmit)="submit()" class="employee-form-container">
+
   <!-- Employee Code -->
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Employee Code</mat-label>
@@ -18,19 +20,24 @@
     <input matInput type="email" formControlName="email" />
   </mat-form-field>
 
-  <!-- Is IT Staff -->
-  <div class="checkbox-container">
-    <mat-checkbox formControlName="isIT">Is IT Staff?</mat-checkbox>
-  </div>
+  <!-- 🔽 Role Dropdown -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Role</mat-label>
+    <mat-select formControlName="role" required>
+      <mat-option value="IT">IT Staff</mat-option>
+      <mat-option value="Manager">Manager</mat-option>
+      <mat-option value="Employee">Employee</mat-option>
+    </mat-select>
+  </mat-form-field>
 
-  <!-- Active / Deactive Toggle -->
+  <!-- 🟢 Active / Inactive -->
   <div class="toggle-container">
     <mat-slide-toggle color="primary" formControlName="status">
-      {{ form.get('status')?.value ? 'Active' : 'Deactive' }}
+      {{ form.get('status')?.value ? 'Active' : 'Inactive' }}
     </mat-slide-toggle>
   </div>
 
-  <!-- Actions -->
+  <!-- 🎯 Actions -->
   <div class="form-actions">
     <button mat-raised-button color="primary" type="submit">Update</button>
     <button mat-button color="warn" type="button" (click)="cancel()">Cancel</button>

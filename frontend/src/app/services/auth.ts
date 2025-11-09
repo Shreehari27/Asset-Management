@@ -48,11 +48,44 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      // Decode JWT payload
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp * 1000; // convert to ms
+
+      // Expired?
+      if (Date.now() > exp) {
+        this.logout();
+        return false;
+      }
+
+      return true; // valid
+    } catch (e) {
+      // Invalid token format
+      this.logout();
+      return false;
+    }
+  }
+
+
+  getRole(): string {
+    const user = this.getUser();
+    return user?.role || '';
   }
 
   isIT(): boolean {
-    const user = this.getUser();
-    return !!(user && user.isIT);
+    return this.getRole() === 'IT';
   }
+
+  isManager(): boolean {
+    return this.getRole() === 'Manager';
+  }
+
+  isEmployee(): boolean {
+    return this.getRole() === 'Employee';
+  }
+
 }

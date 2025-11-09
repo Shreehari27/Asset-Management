@@ -15,6 +15,7 @@ import { ScrapDialogComponent } from '../scrap-dialogue/scrap-dialogue';
 import { AssignmentService } from '../../services/assignment';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatCard } from "@angular/material/card";
 
 @Component({
   selector: 'app-scrap-asset',
@@ -31,8 +32,9 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatDialogModule,
     MatTooltipModule,
     MatDatepickerModule,
-    MatNativeDateModule
-  ],
+    MatNativeDateModule,
+    MatCard
+],
   templateUrl: './scrap-asset.html',
   styleUrls: ['./scrap-asset.css']
 })

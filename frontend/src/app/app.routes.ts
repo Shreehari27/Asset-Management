@@ -26,25 +26,25 @@ export const routes: Routes = [
 
   {
     path: '',
-    component: Layout, // ✅ Always render sidebar + content
-    canActivate: [authGuard], // ✅ Protect all child routes₹
+    component: Layout,
+    canActivate: [authGuard],
     children: [
-      { path: '', component: Dashboard },
+      // Dashboard (IT + Manager only)
+      { path: '', component: Dashboard, canActivate: [itGuard] },
 
       // Assets
-      { path: 'assets', component: AssetList },
+      { path: 'assets', component: AssetList, canActivate: [itGuard] },
       { path: 'assets/add', component: AddAsset, canActivate: [itGuard] },
       { path: 'assets/edit/:id', component: EditAsset, canActivate: [itGuard] },
       { path: 'assets/modify/:assetCode', component: AssetModificationComponent, canActivate: [itGuard] },
       { path: 'assignments/scrap', component: ScrapAsset, canActivate: [itGuard] },
 
-
       // Employees
-      { path: 'employees', component: EmployeeListComponent },
+      { path: 'employees', component: EmployeeListComponent, canActivate: [itGuard] },
       { path: 'employees/add', component: AddEmployee, canActivate: [itGuard] },
       { path: 'employees/edit/:id', component: EditEmployee, canActivate: [itGuard] },
 
-      // Assignments
+      // Assignments (accessible by all roles)
       { path: 'assignments/live', component: Live },
       { path: 'assignments/history', component: History },
       { path: 'assignments/assign', component: AssignAsset, canActivate: [itGuard] },

@@ -4,41 +4,43 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-
-import { EmployeeService } from '../../services/employee';
-import { Employee } from '../../services/employee';
+import { MatSelectModule } from '@angular/material/select';
+import { EmployeeService, Employee } from '../../services/employee';
 import { Router } from '@angular/router';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-add-employee',
-  imports: [CommonModule,
+  standalone: true,
+  imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSlideToggleModule,
     MatButtonModule,
-    MatCheckboxModule,
-    MatIconModule],
+    MatSelectModule,
+    MatIconModule
+  ],
   templateUrl: './add-employee.html',
   styleUrls: ['./add-employee.css']
 })
-
-
-
 export class AddEmployee {
   form: FormGroup;
 
-  constructor(private fb: FormBuilder, private service: EmployeeService, private router: Router) {
+  roles: string[] = ['IT', 'Manager', 'Employee']; // ✅ available roles
+
+  constructor(
+    private fb: FormBuilder,
+    private service: EmployeeService,
+    private router: Router
+  ) {
     this.form = this.fb.group({
       emp_code: ['', Validators.required],
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      isIT: [false]
+      role: ['Employee', Validators.required] // ✅ default role
     });
   }
 
@@ -46,7 +48,7 @@ export class AddEmployee {
     if (this.form.valid) {
       this.service.addEmployee(this.form.value as Employee).subscribe({
         next: () => this.router.navigate(['/employees']),
-        error: err => console.error(err)
+        error: err => console.error('❌ Error adding employee:', err)
       });
     }
   }

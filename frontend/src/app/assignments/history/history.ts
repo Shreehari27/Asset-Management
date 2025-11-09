@@ -10,6 +10,9 @@ import { Assignment } from '../../shared/models/assignment';
 import { AssignmentService } from '../../services/assignment';
 import { EmployeeService, Employee } from '../../services/employee';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AuthService } from '../../services/auth';
+import { MatIconModule } from "@angular/material/icon";
+import { MatCard } from "@angular/material/card";
 
 @Component({
   selector: 'app-history',
@@ -21,8 +24,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatInputModule,
     MatSelectModule,
     FormsModule,
-    MatTooltipModule
-  ],
+    MatTooltipModule,
+    MatIconModule,
+    MatCard
+],
   templateUrl: './history.html',
   styleUrls: ['./history.css']
 })
@@ -60,8 +65,9 @@ export class History implements OnInit {
 
   constructor(
     private assignmentService: AssignmentService,
-    private employeeService: EmployeeService
-  ) {}
+    private employeeService: EmployeeService,
+    public authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -78,14 +84,36 @@ export class History implements OnInit {
   }
 
   loadAssignments(): void {
-    this.assignmentService.getHistory().subscribe({
-      next: (data: Assignment[]) => {
-        this.assignments = data;
-        this.filteredAssignments = [...data];
-      },
-      error: err => console.error(err)
-    });
+    const user = this.authService.getUser();
+    const role = user?.role;
+    const empCode = user?.emp_code;
+
+    if (!role) {
+      console.error('User role missing');
+      return;
+    }
+
+    if (role === 'Employee') {
+      // 🧑‍💼 Employee: fetch only their assignments
+      this.assignmentService.getHistory().subscribe({
+        next: (data: Assignment[]) => {
+          this.assignments = data.filter(a => a.emp_code === empCode);
+          this.filteredAssignments = [...this.assignments];
+        },
+        error: err => console.error(err)
+      });
+    } else {
+      // 👨‍💼 IT or Manager: fetch all
+      this.assignmentService.getHistory().subscribe({
+        next: (data: Assignment[]) => {
+          this.assignments = data;
+          this.filteredAssignments = [...data];
+        },
+        error: err => console.error(err)
+      });
+    }
   }
+
 
   filterAssignments() {
     this.filteredAssignments = this.assignments.filter(a => {

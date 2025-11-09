@@ -52,6 +52,9 @@ export const assignAssets = async (req, res) => {
 
     const processed = [];
     const skipped = [];
+    if (req.user.role !== 'IT') {
+      return res.status(403).json({ message: 'Access denied. IT role required.' });
+    }
 
     for (const item of assignments) {
       const {
@@ -138,6 +141,10 @@ const formatDate = (isoString) => {
 // ➤ Add one or multiple assets(with charger and cable handling)
 export const addAsset = async (req, res) => {
   try {
+    if (req.user.role !== 'IT') {
+      return res.status(403).json({ message: 'Access denied. IT role required.' });
+    }
+
     const assets = Array.isArray(req.body) ? req.body : [req.body];
     const added = [];
     const skipped = [];
@@ -176,9 +183,14 @@ export const addAsset = async (req, res) => {
 
       // Auto-code & serial for cables
       if (asset_type.toLowerCase() === "cables") {
-        const [rows] = await pool.query("SELECT COUNT(*) AS count FROM assets WHERE asset_type='Cables'");
-        const nextNum = rows[0].count + 1;
-        asset_code = `C${nextNum.toString().padStart(3, '0')}`;
+        // Only generate if asset_code is missing
+        if (!asset_code) {
+          const [rows] = await pool.query("SELECT COUNT(*) AS count FROM assets WHERE asset_type='Cables'");
+          const nextNum = rows[0].count + 1;
+          asset_code = `C${nextNum.toString().padStart(Math.max(3, nextNum.toString().length), '0')}`;
+        }
+
+        // Auto serial if missing
         if (!serial_number) serial_number = "N/A";
       }
 
@@ -271,6 +283,10 @@ export const addAsset = async (req, res) => {
 // ====================================================
 export const addAssetModification = async (req, res) => {
   try {
+    if (req.user.role !== 'IT') {
+      return res.status(403).json({ message: 'Access denied. IT role required.' });
+    }
+
     const { asset_code, modification } = req.body;
     const modified_by = req.user?.emp_code; // ✅ from token
 

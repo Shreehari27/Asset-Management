@@ -19,7 +19,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 })
 export class Layout implements OnInit {
   collapsed = false;
-  user: any = null; // ✅ Store logged-in user info
+  user: any = null; //Store logged-in user info
 
   constructor(
     private authService: AuthService,
@@ -31,7 +31,7 @@ export class Layout implements OnInit {
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
     } else {
-      this.user = this.authService.getUser(); // ✅ Retrieve user info from session
+      this.user = this.authService.getUser(); // Retrieve user info from session
     }
   }
 

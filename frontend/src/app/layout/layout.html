@@ -1,36 +1,47 @@
 <div class="layout">
-  <!-- Header -->
+  <!-- HEADER -->
   <header class="header">
     <div class="header-content">
 
-      <!-- Sidebar Toggle Icon -->
-      <button class="menu-toggle" (click)="toggleSidebar()">
+      <!-- ☰ Sidebar Toggle -->
+      <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
         <img src="/hamburger-icon.svg" alt="menu" class="menu-icon" />
       </button>
 
-      <!-- Logo (centered) -->
-      <img src="https://www.pippintitle.com/wp-content/uploads/2024/05/Logo-Pippin-Color-Horizontal-RGB.svg" alt="Logo"
-        class="logo" />
+      <!-- 🏢 Centered Logo 
+      <img
+        src=" "
+        alt="Logo"
+        class="logo"
+      />. -->
 
-      <!-- ✅ User Info (right side) -->
+      <!-- 👤 User Info (Right Side) -->
       <div class="user-info" *ngIf="user">
+        <!-- Avatar -->
+        <div class="user-avatar">
+          {{ user.name?.charAt(0) }}
+        </div>
+
+        <!-- Details -->
         <div class="user-details">
           <span class="user-name">{{ user.name }}</span>
           <span class="user-code">({{ user.emp_code }})</span>
-          <span *ngIf="user.isIT" class="it-badge">IT Staff</span>
+          <span *ngIf="user.role === 'IT'" class="it-badge">{{ user.role }}</span>
+          <span *ngIf="user.role === 'Manager'" class="manager-badge">{{ user.role }}</span>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="logout-wrapper">
+          <button class="logout-btn" (click)="logout()">Logout</button>
         </div>
       </div>
-
-      <!-- ✅ Logout Button -->
-      <button class="logout-btn" (click)="logout()">Logout</button>
     </div>
   </header>
 
-
-  <!-- Main section -->
+  <!-- MAIN SECTION -->
   <div class="main-container">
-    <aside class="sidebar" [class.collapsed]="collapsed">
-      <app-sidebar [collapsed]="collapsed"></app-sidebar>
+    <aside>
+      <app-sidebar class="sidebar" [collapsed]="collapsed"></app-sidebar>
     </aside>
 
     <main class="content">

@@ -99,20 +99,36 @@ export const assignAsset = async (req, res) => {
 // =============================
 export const getLiveAssignments = async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT aa.psd_id, aa.asset_code, a.serial_number, a.asset_type, a.asset_brand, a.processor,
-             e.name AS employee_name, e.emp_code, aa.assigned_by, aa.assign_date, aa.assign_remark
-      FROM assignment_active aa
-      JOIN assets a ON aa.asset_code = a.asset_code
-      JOIN employees e ON aa.emp_code = e.emp_code
-      ORDER BY aa.assign_date DESC
-    `);
+    let rows;
+
+    if (req.user.role === 'Employee') {
+      [rows] = await pool.query(`
+        SELECT aa.psd_id, aa.asset_code, a.serial_number, a.asset_type, a.asset_brand, a.processor,
+               e.name AS employee_name, e.emp_code, aa.assigned_by, aa.assign_date, aa.assign_remark
+        FROM assignment_active aa
+        JOIN assets a ON aa.asset_code = a.asset_code
+        JOIN employees e ON aa.emp_code = e.emp_code
+        WHERE e.emp_code = ?
+        ORDER BY aa.assign_date DESC
+      `, [req.user.emp_code]);
+    } else {
+      [rows] = await pool.query(`
+        SELECT aa.psd_id, aa.asset_code, a.serial_number, a.asset_type, a.asset_brand, a.processor,
+               e.name AS employee_name, e.emp_code, aa.assigned_by, aa.assign_date, aa.assign_remark
+        FROM assignment_active aa
+        JOIN assets a ON aa.asset_code = a.asset_code
+        JOIN employees e ON aa.emp_code = e.emp_code
+        ORDER BY aa.assign_date DESC
+      `);
+    }
+
     res.json(rows);
   } catch (err) {
     console.error("❌ Error fetching live assignments:", err);
     res.status(500).json({ error: "Failed to fetch live assignments" });
   }
 };
+
 
 // =============================
 // ➤ Get Assignment History
@@ -141,7 +157,7 @@ export const getAssignmentHistory = async (req, res) => {
 export const returnAsset = async (req, res) => {
   try {
     const { asset_code } = req.params;
-    const { return_date, return_remark} = req.body;
+    const { return_date, return_remark } = req.body;
     const return_to = req.user?.emp_code; // ✅ from JWT
 
     if (!return_date) {

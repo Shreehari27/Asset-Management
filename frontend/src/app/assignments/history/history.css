@@ -1,77 +1,85 @@
 :host {
   display: block;
   padding: 16px;
+  background: #f5f9ff;
+}
+
+/* Title */
+.assignments-header {
+  font-size: 1.6rem;
+  color: #1565c0;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* Filter Card */
+.filter-card {
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+/* Filter grid layout */
+.filter-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+/* Filter field */
+.filter-field {
+  width: 100%;
+}
+
+/* Reset button aligned to bottom */
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Table container */
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 8px;
-}
-
-th, td {
-  padding: 12px 16px;
-  text-align: left;
-  vertical-align: middle;
+  border-spacing: 0 6px;
 }
 
 th {
-  background-color: #f5f5f5;
+  background-color: #e3f2fd;
+  color: #0d47a1;
   font-weight: 600;
+  padding: 12px 16px;
 }
 
-tr {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
 }
 
-button {
-  margin: 0 4px;
-  padding: 6px 12px;
-  border-radius: 4px;
+tr:hover td {
+  background-color: #f9fbff;
 }
 
-/* Filters spacing */
-.search-container {
-  margin-bottom: 16px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.search-container input,
-.search-container select {
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-/* Mat label fixes */
-.search-container mat-form-field .mat-mdc-form-field-label {
-  position: absolute !important;
-  top: -8px !important;
-  left: 12px !important;
-  background: white !important;
-  padding: 0 4px !important;
-  font-size: 12px !important;
-  color: rgba(0, 0, 0, 0.6) !important;
-  display: block !important;
-  z-index: 10 !important;
-}
-
-.search-container mat-form-field {
-  position: relative;
-  height: 72px !important;
-  padding-top: 16px;
-}
-
-.search-container mat-form-field.mat-mdc-form-field-appearance-outline .mat-mdc-form-field-outline {
-  top: 0;
-}
-
+/* Responsive tweaks */
 @media (max-width: 768px) {
-  .search-container {
-    flex-direction: column;
+  .filter-container {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions {
+    justify-content: center;
   }
 }

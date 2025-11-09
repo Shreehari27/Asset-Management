@@ -1,23 +1,70 @@
 .employee-form-container {
-  max-width: 500px;
-  margin: 0 auto;
+  max-width: 480px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 16px; /* spacing between fields */
+  gap: 20px;
+}
+
+.page-title {
+  text-align: center;
+  color: #0d47a1;
+  font-weight: 600;
+  margin-bottom: 16px;
 }
 
 .full-width {
   width: 100%;
 }
 
-.checkbox-container {
+mat-label {
+  color: #424242;
+  font-weight: 500;
+}
+
+.toggle-container {
   display: flex;
+  justify-content: flex-start;
   align-items: center;
-  padding: 4px 0;
 }
 
 .form-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+button[mat-raised-button] {
+  background: #1976d2;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+button[mat-raised-button]:hover {
+  background: #115293;
+}
+
+button[mat-button] {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .employee-form-container {
+    padding: 16px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  button {
+    width: 100%;
+  }
 }

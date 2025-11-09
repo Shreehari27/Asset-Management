@@ -1,73 +1,107 @@
 :host {
   display: block;
   padding: 16px;
+  background: #f5f9ff;
 }
 
-h2.assignments-header {
-  margin-bottom: 16px;
+/* 🔷 Header */
+.assignments-header {
+  font-size: 1.6rem;
+  color: #1565c0;
+  margin-bottom: 20px;
   font-weight: 600;
 }
 
+/* ➕ Add Asset Button */
 .add-asset-btn-container {
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
   margin-bottom: 16px;
 }
 
-.search-container {
+.add-asset-btn-container button {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 20px;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
 }
 
+/* 🔍 Filter Card Styling */
+.filter-card {
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+/* Grid layout for filters */
+.filter-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.filter-field {
+  width: 100%;
+}
+
+/* Reset button styling */
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.filter-actions button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+}
+
+.filter-actions button:hover {
+  transform: scale(1.05);
+}
+
+/* 📋 Table Styling */
 .table-container {
-  overflow-x: auto;
-  position: relative;
-  /* 👈 important for tooltips */
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
-.content {
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* optional */
-}
-
-
-.mat-tooltip-panel {
-  z-index: 2000 !important;
-  /* ensure tooltips appear above everything */
-}
-
 
 table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 8px;
-}
-
-th,
-td {
-  padding: 12px 16px;
-  text-align: left;
-  vertical-align: middle;
+  border-spacing: 0 6px;
 }
 
 th {
-  background-color: #f5f5f5;
+  background-color: #e3f2fd;
+  color: #0d47a1;
   font-weight: 600;
+  padding: 12px 16px;
 }
 
-tr {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
 }
 
-/* Chips */
+tr:hover td {
+  background-color: #f9fbff;
+}
+
+/* ✅ Status & Warranty Chips */
 .status-chip,
 .warranty-chip {
   font-weight: 500;
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 12px;
   font-size: 13px;
   text-transform: capitalize;
@@ -103,7 +137,6 @@ tr {
   color: #004d40;
 }
 
-
 .warranty-active {
   background: #e0f7e9;
   color: #1b5e20;
@@ -114,24 +147,22 @@ tr {
   color: #b71c1c;
 }
 
-/* Fix mat-label overlap issue */
-.search-container mat-form-field .mat-mdc-form-field-label {
-  position: absolute !important;
-  top: -8px !important;
-  left: 12px !important;
-  background: white !important;
-  padding: 0 4px !important;
-  z-index: 10 !important;
-  font-size: 12px !important;
-}
-
-/* Responsive */
+/* 📱 Responsive layout */
 @media (max-width: 768px) {
-  .search-container {
-    flex-direction: column;
+  .filter-container {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-actions {
+    justify-content: center;
+  }
+
+  .assignments-header {
+    text-align: center;
   }
 }
 
+/* Tooltip styling */
 .tooltip-style {
   background-color: #2b2b2b;
   color: white;

@@ -66,7 +66,8 @@ export class Live implements OnInit {
     asset_type: '',
     asset_brand: '',
     serial_number: '',
-    assigned_to: ''
+    assigned_to: '',
+    psd_id: ''
   };
 
   assetTypes: string[] = [
@@ -142,26 +143,34 @@ export class Live implements OnInit {
     this.filteredAssignments = this.assignments.filter(a => {
       const emp = this.employeeMap.get(a.emp_code);
 
-      // Match employee by code, name, or email
-      const matchesEmployee = !this.filters.assigned_to ||
+      const matchesEmployee =
+        !this.filters.assigned_to ||
         a.emp_code.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
-        (emp && (
-          emp.name.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
-          emp.email.toLowerCase().includes(this.filters.assigned_to.toLowerCase())
-        ));
+        (emp &&
+          (emp.name.toLowerCase().includes(this.filters.assigned_to.toLowerCase()) ||
+            emp.email.toLowerCase().includes(this.filters.assigned_to.toLowerCase())));
 
       return (
         (!this.filters.asset_type || a.asset_type.toLowerCase() === this.filters.asset_type.toLowerCase()) &&
         (!this.filters.asset_brand || a.asset_brand.toLowerCase().includes(this.filters.asset_brand.toLowerCase())) &&
         (!this.filters.serial_number || a.serial_number.toLowerCase().includes(this.filters.serial_number.toLowerCase())) &&
+        (!this.filters.psd_id || a.psd_id.toLowerCase().includes(this.filters.psd_id.toLowerCase())) &&
         matchesEmployee
       );
     });
   }
 
 
+
   resetFilter() {
-    this.filters = { asset_type: '', asset_brand: '', serial_number: '', assigned_to: '' };
+    this.filters = {
+      asset_type: '',
+      asset_brand: '',
+      serial_number: '',
+      assigned_to: '',
+      psd_id: ''
+    };
     this.filteredAssignments = [...this.assignments];
   }
+
 }

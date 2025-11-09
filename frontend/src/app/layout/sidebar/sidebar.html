@@ -1,87 +1,154 @@
-<mat-nav-list>
-  <!-- Dashboard -->
-  <a mat-list-item 
-     routerLink="/" 
-     routerLinkActive="active" 
-     matRipple 
-     [matRippleColor]="'rgba(255,255,255,0.3)'" 
-     class="bubble">
-    <mat-icon>dashboard</mat-icon>
-    <span *ngIf="!collapsed">Dashboard</span>
-  </a>
+<div
+  class="sidebar-wrapper"
+  role="navigation"
+  aria-label="Main sidebar navigation"
+  [@sidebarToggle]="collapsed ? 'collapsed' : 'expanded'"
+  [class.collapsed]="collapsed"
+>
 
-  <!-- Employees Section -->
-  <mat-divider *ngIf="!collapsed"></mat-divider>
-  <h3 mat-subheader *ngIf="!collapsed">Employees</h3>
-  <a mat-list-item 
-     routerLink="/employees" 
-     routerLinkActive="active"
-     matRipple 
-     [matRippleColor]="'rgba(255,255,255,0.3)'" 
-     class="bubble">
-    <mat-icon>group</mat-icon>
-    <span *ngIf="!collapsed">All Employees</span>
-  </a>
-  <a mat-list-item 
-     routerLink="/employees/add" 
-     routerLinkActive="active"
-     matRipple 
-     [matRippleColor]="'rgba(255,255,255,0.3)'" 
-     class="bubble">
-    <mat-icon>person_add</mat-icon>
-    <span *ngIf="!collapsed">Add Employee</span>
-  </a>
+  <!-- DASHBOARD -->
+  <mat-card
+    class="sidebar-option"
+    [routerLink]="'/'"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    matRipple
+    role="link"
+    tabindex="0"
+    aria-label="Dashboard"
+    [class.icon-only]="collapsed"
+  >
+    <mat-icon aria-hidden="true">dashboard</mat-icon>
+    <span class="label" *ngIf="!collapsed" [@labelFade]="collapsed ? 'hidden' : 'visible'">
+      Dashboard
+    </span>
+  </mat-card>
 
-  <!-- Assets Section -->
-  <mat-divider *ngIf="!collapsed"></mat-divider>
-  <h3 mat-subheader *ngIf="!collapsed">Assets</h3>
-  <a mat-list-item 
-     routerLink="/assets" 
-     routerLinkActive="active"
-     matRipple 
-     [matRippleColor]="'rgba(255,255,255,0.3)'" 
-     class="bubble">
-    <mat-icon>inventory</mat-icon>
-    <span *ngIf="!collapsed">All Assets</span>
-  </a>
-  <a mat-list-item 
-     routerLink="/assignments/assign" 
-     routerLinkActive="active"
-     matRipple 
-     [matRippleColor]="'rgba(255,255,255,0.3)'" 
-     class="bubble">
-    <mat-icon matPrefix>add_task</mat-icon>
-    <span *ngIf="!collapsed">Assign Asset</span>
-  </a>
-  <a mat-list-item 
-     routerLink="/assignments/scrap" 
-     routerLinkActive="active"
-     matRipple 
-     [matRippleColor]="'rgba(255,255,255,0.3)'" 
-     class="bubble">
-    <mat-icon>delete_forever</mat-icon>
-    <span *ngIf="!collapsed">Scrap Asset</span>
-  </a>
+  <!-- EMPLOYEES -->
+  <ng-container *ngIf="isIT() || isManager()">
+    <div class="section" *ngIf="!collapsed">
+      <h3 class="section-title">Employees</h3>
+    </div>
 
-  <!-- Assignments Section -->
-  <mat-divider *ngIf="!collapsed"></mat-divider>
-  <h3 mat-subheader *ngIf="!collapsed">Assignments</h3>
-  <a mat-list-item 
-     routerLink="/assignments/live" 
-     routerLinkActive="active"
-     matRipple 
-     [matRippleColor]="'rgba(255,255,255,0.3)'" 
-     class="bubble">
-    <mat-icon>assignment</mat-icon>
-    <span *ngIf="!collapsed">Live Assignments</span>
-  </a>
-  <a mat-list-item 
-     routerLink="/assignments/history" 
-     routerLinkActive="active"
-     matRipple 
-     [matRippleColor]="'rgba(255,255,255,0.3)'" 
-     class="bubble">
-    <mat-icon>history</mat-icon>
-    <span *ngIf="!collapsed">Assignment History</span>
-  </a>
-</mat-nav-list>
+    <mat-card
+      class="sidebar-option"
+      [routerLink]="'/employees'"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      matRipple
+      role="link"
+      tabindex="0"
+      aria-label="Employees"
+      [class.icon-only]="collapsed"
+    >
+      <mat-icon aria-hidden="true">group</mat-icon>
+      <span class="label" *ngIf="!collapsed" [@labelFade]>All Employees</span>
+    </mat-card>
+
+    <mat-card
+      *ngIf="isIT()"
+      class="sidebar-option"
+      [routerLink]="'/employees/add'"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      matRipple
+      role="link"
+      tabindex="0"
+      aria-label="Add Employee"
+      [class.icon-only]="collapsed"
+    >
+      <mat-icon aria-hidden="true">person_add</mat-icon>
+      <span class="label" *ngIf="!collapsed" [@labelFade]>Add Employee</span>
+    </mat-card>
+  </ng-container>
+
+  <!-- ASSETS -->
+  <ng-container *ngIf="isIT() || isManager()">
+    <div class="section" *ngIf="!collapsed">
+      <h3 class="section-title">Assets</h3>
+    </div>
+
+    <mat-card
+      class="sidebar-option"
+      [routerLink]="'/assets'"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      matRipple
+      role="link"
+      tabindex="0"
+      aria-label="All Assets"
+      [class.icon-only]="collapsed"
+    >
+      <mat-icon aria-hidden="true">inventory_2</mat-icon>
+      <span class="label" *ngIf="!collapsed" [@labelFade]>All Assets</span>
+    </mat-card>
+
+    <mat-card
+      *ngIf="isIT()"
+      class="sidebar-option"
+      [routerLink]="'/assignments/assign'"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      matRipple
+      role="link"
+      tabindex="0"
+      aria-label="Assign Asset"
+      [class.icon-only]="collapsed"
+    >
+      <mat-icon aria-hidden="true">add_task</mat-icon>
+      <span class="label" *ngIf="!collapsed" [@labelFade]>Assign Asset</span>
+    </mat-card>
+
+    <mat-card
+      *ngIf="isIT()"
+      class="sidebar-option"
+      [routerLink]="'/assignments/scrap'"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      matRipple
+      role="link"
+      tabindex="0"
+      aria-label="Scrap Asset"
+      [class.icon-only]="collapsed"
+    >
+      <mat-icon aria-hidden="true">delete_forever</mat-icon>
+      <span class="label" *ngIf="!collapsed" [@labelFade]>Scrap Asset</span>
+    </mat-card>
+  </ng-container>
+
+  <!-- ASSIGNMENTS -->
+  <div class="section" *ngIf="!collapsed">
+    <h3 class="section-title">Assignments</h3>
+  </div>
+
+  <mat-card
+    class="sidebar-option"
+    [routerLink]="'/assignments/live'"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    matRipple
+    role="link"
+    tabindex="0"
+    aria-label="Live Assignments"
+    [class.icon-only]="collapsed"
+  >
+    <mat-icon aria-hidden="true">assignment</mat-icon>
+    <span class="label" *ngIf="!collapsed" [@labelFade]>Live Assignments</span>
+  </mat-card>
+
+  <mat-card
+    class="sidebar-option"
+    [routerLink]="'/assignments/history'"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    matRipple
+    role="link"
+    tabindex="0"
+    aria-label="Assignment History"
+    [class.icon-only]="collapsed"
+  >
+    <mat-icon aria-hidden="true">history</mat-icon>
+    <span class="label" *ngIf="!collapsed" [@labelFade]>Assignment History</span>
+  </mat-card>
+
+</div>

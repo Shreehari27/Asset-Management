@@ -2,11 +2,19 @@ import pool from "../config/db.js";
 
 export const getDashboardStats = async (req, res) => {
   try {
-    // Basic overall counts
-    const [totalAssets] = await pool.query("SELECT COUNT(*) AS total FROM assets");
-    const [assignedAssets] = await pool.query("SELECT COUNT(*) AS total FROM assets WHERE status='assigned'");
-    const [availableAssets] = await pool.query("SELECT COUNT(*) AS total FROM assets WHERE status='available'");
-    const [scrappedAssets] = await pool.query("SELECT COUNT(*) AS total FROM assets WHERE status='scrapped'");
+    // ✅ Exclude Chargers from global totals
+    const [totalAssets] = await pool.query(
+      "SELECT COUNT(*) AS total FROM assets WHERE asset_type != 'Charger'"
+    );
+    const [assignedAssets] = await pool.query(
+      "SELECT COUNT(*) AS total FROM assets WHERE status='assigned' AND asset_type != 'Charger'"
+    );
+    const [availableAssets] = await pool.query(
+      "SELECT COUNT(*) AS total FROM assets WHERE status IN ('available','ready_to_be_assigned') AND asset_type != 'Charger'"
+    );
+    const [scrappedAssets] = await pool.query(
+      "SELECT COUNT(*) AS total FROM assets WHERE status='scrapped' AND asset_type != 'Charger'"
+    );
     const [totalEmployees] = await pool.query("SELECT COUNT(*) AS total FROM employees");
 
     // ----- Per Asset Type Stats -----
@@ -21,15 +29,20 @@ export const getDashboardStats = async (req, res) => {
     const [typeStats] = await pool.query(`
       SELECT asset_type, status, COUNT(*) AS count
       FROM assets
-      WHERE asset_type IN (?)
+      WHERE asset_type IN (?) AND asset_type != 'Charger'
       GROUP BY asset_type, status
     `, [assetTypes]);
 
-    // Structure it as { asset_type: { assigned: x, available: y, scrapped: z } }
+    // Structure: { asset_type: { assigned, available, scrapped, ready_to_be_assigned } }
     const assetTypeSummary = {};
     for (const row of typeStats) {
       if (!assetTypeSummary[row.asset_type]) {
-        assetTypeSummary[row.asset_type] = { assigned: 0, available: 0, scrapped: 0 };
+        assetTypeSummary[row.asset_type] = {
+          assigned: 0,
+          available: 0,
+          scrapped: 0,
+          ready_to_be_assigned: 0
+        };
       }
       assetTypeSummary[row.asset_type][row.status] = row.count;
     }
@@ -44,18 +57,24 @@ export const getDashboardStats = async (req, res) => {
     const [cableStats] = await pool.query(`
       SELECT cable_type, status, COUNT(*) AS count
       FROM assets
-      WHERE asset_type='Cables' AND cable_type IN (?)
+      WHERE asset_type='Cables' AND cable_type IN (?) AND asset_type != 'Charger'
       GROUP BY cable_type, status
     `, [cableTypes]);
 
     const cableTypeSummary = {};
     for (const row of cableStats) {
       if (!cableTypeSummary[row.cable_type]) {
-        cableTypeSummary[row.cable_type] = { assigned: 0, available: 0, scrapped: 0 };
+        cableTypeSummary[row.cable_type] = {
+          assigned: 0,
+          available: 0,
+          scrapped: 0,
+          ready_to_be_assigned: 0
+        };
       }
       cableTypeSummary[row.cable_type][row.status] = row.count;
     }
 
+    // ✅ Return cleaned dashboard data
     res.json({
       totalAssets: totalAssets[0].total,
       assignedAssets: assignedAssets[0].total,
@@ -65,6 +84,7 @@ export const getDashboardStats = async (req, res) => {
       assetTypeSummary,
       cableTypeSummary
     });
+
   } catch (error) {
     console.error("❌ Error fetching dashboard stats:", error);
     res.status(500).json({ error: "Internal Server Error" });

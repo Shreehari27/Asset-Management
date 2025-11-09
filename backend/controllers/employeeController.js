@@ -14,7 +14,7 @@ export const getEmployees = async (req, res) => {
 // Get IT employees only
 export const getITEmployees = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM employees WHERE isIT = ?", [true]);
+    const [rows] = await pool.query("SELECT * FROM employees WHERE role = 'IT'");
     res.json(rows);
   } catch (err) {
     console.error("❌ Error fetching IT employees:", err);
@@ -38,10 +38,10 @@ export const getEmployeeById = async (req, res) => {
 // Add new employee
 export const addEmployee = async (req, res) => {
   try {
-    const { emp_code, name, email, isIT = false, status = "active" } = req.body;
+    const { emp_code, name, email, role, status = 'active' } = req.body;
     await pool.query(
-      "INSERT INTO employees (emp_code, name, email, isIT, status) VALUES (?, ?, ?, ?, ?)",
-      [emp_code, name, email, isIT, status]
+      "INSERT INTO employees (emp_code, name, email, role, status) VALUES (?, ?, ?, ?, ?)",
+      [emp_code, name, email, role, status]
     );
     res.status(201).json({ message: "✅ Employee added" });
   } catch (err) {

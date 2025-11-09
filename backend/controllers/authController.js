@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import nodemailer from "nodemailer";
 
-// ✅ SIGNUP (validate email in employees table, get emp_code, then create user)
+// ✅ SIGNUP (validate email & active status)
 export const signup = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -13,9 +13,9 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // 🔹 Check if email exists in employees table
+    // 🔹 Check if email exists in employees table and is active
     const [employeeRows] = await pool.query(
-      "SELECT emp_code, name FROM employees WHERE email = ?",
+      "SELECT emp_code, name, status FROM employees WHERE email = ?",
       [email]
     );
 
@@ -25,7 +25,13 @@ export const signup = async (req, res) => {
       });
     }
 
-    const { emp_code, name } = employeeRows[0];
+    const { emp_code, name, status } = employeeRows[0];
+
+    if (status !== "active") {
+      return res.status(403).json({
+        message: `Signup not allowed. Employee account is ${status}. Please contact admin.`,
+      });
+    }
 
     // 🔹 Check if already signed up
     const [existingUser] = await pool.query(
@@ -63,26 +69,51 @@ export const signup = async (req, res) => {
   }
 };
 
-
-// ✅ LOGIN
+// ✅ LOGIN (only active employees can log in)
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const [users] = await pool.query("SELECT * FROM user_logins WHERE email = ?", [email]);
-    if (users.length === 0) return res.status(404).json({ message: "User not found" });
+    const [users] = await pool.query(
+      "SELECT * FROM user_logins WHERE email = ?",
+      [email]
+    );
+    if (users.length === 0)
+      return res.status(404).json({ message: "User not found" });
+
     const user = users[0];
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid credentials" });
 
-    // fetch employee info including isIT
-    const [empData] = await pool.query("SELECT name, isIT FROM employees WHERE emp_code = ?", [user.emp_code]);
-    const emp = empData[0] || { name: null, isIT: false };
+    // fetch employee info including role and status
+    const [empData] = await pool.query(
+      "SELECT name, role, status FROM employees WHERE emp_code = ?",
+      [user.emp_code]
+    );
 
-    // include isIT in token
+    if (empData.length === 0)
+      return res.status(404).json({ message: "Employee record missing" });
+
+    const emp = empData[0];
+
+    // 🔒 Check if employee is active
+    if (emp.status !== "active") {
+      return res.status(403).json({
+        message: `Access denied. Employee status is '${emp.status}'. Please contact admin.`,
+      });
+    }
+
+    // ✅ Generate JWT token with role & name
     const token = jwt.sign(
-      { id: user.id, emp_code: user.emp_code, email: user.email, isIT: !!emp.isIT, name: emp.name },
+      {
+        id: user.id,
+        emp_code: user.emp_code,
+        email: user.email,
+        role: emp.role,
+        name: emp.name,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -94,8 +125,8 @@ export const login = async (req, res) => {
         emp_code: user.emp_code,
         email: user.email,
         name: emp.name,
-        isIT: !!emp.isIT
-      }
+        role: emp.role,
+      },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -103,22 +134,35 @@ export const login = async (req, res) => {
   }
 };
 
-
-
-// 🧩 Temporary store for OTPs (in-memory)
-const otpStore = new Map(); // key: email, value: { otp, expiresAt }
+// 🧩 OTP Section (same as before)
+const otpStore = new Map();
 
 // ✅ Send Reset OTP
 export const sendResetOTP = async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) return res.status(400).json({ message: "Email is required" });
+    if (!email)
+      return res.status(400).json({ message: "Email is required" });
 
     // Check user exists
-    const [users] = await pool.query("SELECT * FROM user_logins WHERE email = ?", [email]);
+    const [users] = await pool.query(
+      "SELECT * FROM user_logins WHERE email = ?",
+      [email]
+    );
     if (users.length === 0) {
       return res.status(404).json({ message: "No user found with this email" });
+    }
+
+    // Check employee is active
+    const [empStatus] = await pool.query(
+      "SELECT status FROM employees WHERE email = ?",
+      [email]
+    );
+    if (empStatus[0]?.status !== "active") {
+      return res.status(403).json({
+        message: `Password reset not allowed. Employee account is ${empStatus[0]?.status}.`,
+      });
     }
 
     // Generate OTP
@@ -126,12 +170,11 @@ export const sendResetOTP = async (req, res) => {
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
     otpStore.set(email, { otp, expiresAt });
 
-    // Configure email sender (Gmail example)
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.MAIL_USER, // example: yourcompany@gmail.com
-        pass: process.env.MAIL_PASS, // app password
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
       },
     });
 
@@ -155,21 +198,26 @@ export const sendResetOTP = async (req, res) => {
     res.json({ message: "OTP sent successfully to your email" });
   } catch (error) {
     console.error("❌ Error sending OTP:", error);
-    res.status(500).json({ message: "Failed to send OTP", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to send OTP", error: error.message });
   }
 };
 
-// ✅ Verify OTP and Reset Password
+// ✅ Verify OTP and Reset Password (unchanged)
 export const verifyResetOTP = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 
     if (!email || !otp || !newPassword) {
-      return res.status(400).json({ message: "Email, OTP, and new password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email, OTP, and new password are required" });
     }
 
     const record = otpStore.get(email);
-    if (!record) return res.status(400).json({ message: "No OTP found for this email" });
+    if (!record)
+      return res.status(400).json({ message: "No OTP found for this email" });
 
     if (Date.now() > record.expiresAt) {
       otpStore.delete(email);
@@ -180,15 +228,18 @@ export const verifyResetOTP = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // Update password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await pool.query("UPDATE user_logins SET password_hash = ? WHERE email = ?", [hashedPassword, email]);
+    await pool.query(
+      "UPDATE user_logins SET password_hash = ? WHERE email = ?",
+      [hashedPassword, email]
+    );
 
-    otpStore.delete(email); // remove OTP after successful reset
+    otpStore.delete(email);
     res.json({ message: "Password reset successful" });
-
   } catch (error) {
     console.error("❌ Error resetting password:", error);
-    res.status(500).json({ message: "Password reset failed", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Password reset failed", error: error.message });
   }
 };

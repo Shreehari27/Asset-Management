@@ -77,36 +77,37 @@ export class AssignAsset implements OnInit {
 
   ngOnInit(): void {
     const user = this.authService.getUser();
-    const isIT = user?.isIT;
+    const role = user?.role;
     const empCode = user?.emp_code;
 
     this.loadEmployees();
 
     this.assignmentForm = this.fb.group({
       emp_code: ['', Validators.required],
-      assigned_by: [{ value: empCode, disabled: true }, Validators.required], // ✅ Locked auto-fill
+      assigned_by: [{ value: empCode, disabled: true }, Validators.required],
       psd_id: ['', Validators.required],
       assignments: this.fb.array([this.createAssignment()])
     });
 
-    if (!isIT) {
+    // 🟡 Disable form for non-IT users
+    if (role !== 'IT') {
       this.assignmentForm.disable();
     }
 
-
-    // Initialize first row filters
+    // Initialize search fields
     this.assetTypeSearch[0] = '';
     this.filteredAssetTypes[0] = [...this.assetTypes];
     this.cableTypeSearch[0] = '';
     this.filteredCableTypes[0] = [...this.cableTypes];
   }
 
+
   /** Load employees */
   loadEmployees(): void {
     this.employeeService.getEmployees().subscribe({
       next: (res: Employee[]) => {
         this.employees = res.filter(e => e.status === 'active');
-        this.itPersons = this.employees.filter(e => e.isIT);
+        this.itPersons = this.employees.filter(e => e.role === 'IT');
         this.filteredEmployees = [...this.employees];
         this.filteredItPersons = [...this.itPersons];
       },

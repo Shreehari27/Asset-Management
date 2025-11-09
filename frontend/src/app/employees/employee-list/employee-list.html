@@ -1,90 +1,118 @@
 <mat-card class="main-card">
   <mat-card-title>Employee Details</mat-card-title>
 
-  <!-- 🔍 Search + Filter Bar -->
-  <div class="search-filter-bar">
-    <!-- Search -->
-    <mat-form-field appearance="outline" class="search-box">
+  <!-- unified filter bar (same look as History / Live) -->
+  <div class="search-container filter-card">
+    <mat-form-field appearance="outline" class="filter-field">
       <mat-label>Search Employees</mat-label>
-      <input matInput [(ngModel)]="searchText" placeholder="Name / Email / Employee Code" />
-      <button *ngIf="searchText" matSuffix mat-icon-button (click)="searchText = ''">
+      <input
+        matInput
+        [(ngModel)]="searchText"
+        (input)="applyFilter()"
+        placeholder="Search by Name / Email / Emp Code / PSD ID"
+      />
+      <button
+        *ngIf="searchText"
+        matSuffix
+        mat-icon-button
+        (click)="searchText = ''; applyFilter();"
+        aria-label="Clear search"
+      >
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
 
-    <!-- Status Filter -->
-    <mat-form-field appearance="outline" class="status-box">
-      <mat-label>Filter by Status</mat-label>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Role</mat-label>
+      <mat-select [(ngModel)]="roleFilter" (selectionChange)="applyFilter()">
+        <mat-option value="">All</mat-option>
+        <mat-option value="IT">IT</mat-option>
+        <mat-option value="Manager">Manager</mat-option>
+        <mat-option value="Employee">Employee</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Status</mat-label>
       <mat-select [(ngModel)]="statusFilter" (selectionChange)="applyFilter()">
         <mat-option value="">All</mat-option>
         <mat-option value="active">Active</mat-option>
-        <mat-option value="deactive">Deactive</mat-option>
+        <mat-option value="inactive">Inactive</mat-option>
       </mat-select>
     </mat-form-field>
+
+    <div class="filter-actions">
+      <button mat-stroked-button color="warn" (click)="resetFilters()" aria-label="Reset filters">
+        <mat-icon>refresh</mat-icon>
+        Reset
+      </button>
+    </div>
   </div>
 
-  <!-- 📋 Employee Table -->
+  <!-- table (keeps same visual language as other pages) -->
   <div class="table-container">
-    <mat-table [dataSource]="filteredData | filter: searchText: ['name', 'email', 'emp_code']"
-      class="custom-table mat-elevation-z1">
+    <table mat-table [dataSource]="filteredData | filter: searchText: ['name', 'email', 'emp_code']" class="full-width-table">
       <!-- Employee Code -->
       <ng-container matColumnDef="emp_code">
-        <mat-header-cell *matHeaderCellDef> Employee ID </mat-header-cell>
-        <mat-cell *matCellDef="let element">
+        <th mat-header-cell *matHeaderCellDef> Employee ID </th>
+        <td mat-cell *matCellDef="let element">
           <a [routerLink]="['/employees', element.emp_code, 'assignments']" class="emp-link">
             {{ element.emp_code }}
           </a>
-        </mat-cell>
+        </td>
       </ng-container>
 
       <!-- Name -->
       <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-        <mat-cell *matCellDef="let element">{{ element.name }}</mat-cell>
+        <th mat-header-cell *matHeaderCellDef> Name </th>
+        <td mat-cell *matCellDef="let element"> {{ element.name }} </td>
       </ng-container>
 
       <!-- Email -->
       <ng-container matColumnDef="email">
-        <mat-header-cell *matHeaderCellDef> Email </mat-header-cell>
-        <mat-cell *matCellDef="let element">{{ element.email }}</mat-cell>
+        <th mat-header-cell *matHeaderCellDef> Email </th>
+        <td mat-cell *matCellDef="let element"> {{ element.email }} </td>
       </ng-container>
 
-      <!-- IT Staff -->
-      <ng-container matColumnDef="isIT">
-        <mat-header-cell *matHeaderCellDef> IT Staff </mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <mat-icon color="{{ element.isIT ? 'primary' : 'warn' }}">
-            {{ element.isIT ? 'check_circle' : 'cancel' }}
-          </mat-icon>
-        </mat-cell>
+      <!-- Role -->
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef> Role </th>
+        <td mat-cell *matCellDef="let element">
+          <span class="role-badge" [ngClass]="{
+            'it-role': element.role === 'IT',
+            'manager-role': element.role === 'Manager',
+            'employee-role': element.role === 'Employee'
+          }">
+            {{ element.role || 'Employee' }}
+          </span>
+        </td>
       </ng-container>
 
       <!-- Status -->
       <ng-container matColumnDef="status">
-        <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
-        <mat-cell *matCellDef="let element">
+        <th mat-header-cell *matHeaderCellDef> Status </th>
+        <td mat-cell *matCellDef="let element">
           <span [ngClass]="{
-              'active-status': element.status === 'active',
-              'inactive-status': element.status === 'deactive'
-            }">
-            {{ element.status === 'active' ? 'Active' : 'Deactive' }}
+            'active-status': element.status === 'active',
+            'inactive-status': element.status === 'inactive'
+          }">
+            {{ element.status === 'active' ? 'Active' : 'Inactive' }}
           </span>
-        </mat-cell>
+        </td>
       </ng-container>
 
       <!-- Actions -->
       <ng-container matColumnDef="actions">
-        <mat-header-cell *matHeaderCellDef> Actions </mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <button mat-icon-button color="primary" [routerLink]="['/employees/edit', element.emp_code]">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="primary" [routerLink]="['/employees/edit', element.emp_code]" *ngIf="authService.isIT()" matTooltip="Edit Employee">
             <mat-icon>edit</mat-icon>
           </button>
-        </mat-cell>
+        </td>
       </ng-container>
 
-      <!-- Table Rows -->
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns" class="custom-row"></mat-row>
-    </mat-table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="custom-row"></tr>
+    </table>
   </div>
 </mat-card>

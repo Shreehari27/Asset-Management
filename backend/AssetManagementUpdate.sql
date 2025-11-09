@@ -245,3 +245,29 @@ CREATE TABLE user_logins (
     FOREIGN KEY (emp_code) REFERENCES employees(emp_code)
 );
 select * FROM user_logins;
+
+
+-- Add purchase_date and lot_number fields to assets table
+ALTER TABLE assets
+ADD COLUMN purchase_date DATE NULL AFTER asset_brand,
+ADD COLUMN lot_number VARCHAR(100) NULL AFTER purchase_date;
+
+USE ASSETMANAGEMENT;
+
+ALTER TABLE assets
+ADD COLUMN model_name VARCHAR(100) NULL AFTER asset_brand,
+ADD COLUMN location VARCHAR(100) NULL AFTER lot_number;
+
+select * from assets where status="available";
+select * from employees;
+
+USE ASSETMANAGEMENT;
+
+ALTER TABLE employees
+DROP COLUMN isIT;
+
+ALTER TABLE employees
+ADD COLUMN role ENUM('IT', 'Manager', 'Employee') DEFAULT 'Employee' AFTER email;
+
+
+

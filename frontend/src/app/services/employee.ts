@@ -7,7 +7,7 @@ export interface Employee {
   emp_code: string;
   name: string;
   email: string;
-  isIT: boolean;
+  role: 'IT' | 'Manager' | 'Employee';
   status: string;
 }
 

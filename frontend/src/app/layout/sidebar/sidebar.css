@@ -1,107 +1,138 @@
-/* Sidebar container */
-.sidebar {
-  backdrop-filter: blur(20px);
-  background: rgba(30, 30, 30, 0.65);
-  border-top-right-radius: 16px;
-  border-bottom-right-radius: 16px;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.35);
-  padding: 16px 8px;
-  width: 300px;
+.sidebar-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  transition: width 0.3s ease;
+  gap: 10px;
+  padding: 12px;
+  background: #f7f9fc;
+  min-height: 100vh;
+  width: 280px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  transition: all 0.25s ease-in-out;
 }
 
-/* Collapsed mode */
-.sidebar.collapsed {
-  width: 80px;
-  gap: 8px;
+.sidebar-wrapper.collapsed {
+  width: 72px;
+  padding: 8px;
 }
 
-/* Section headers */
-h3.mat-subheader {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px 16px;
+/* Section Headings */
+.section-title {
+  margin: 6px 6px 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
-/* Bubble-style nav items */
-a.mat-list-item.bubble {
+/* Sidebar option (mat-card) */
+.sidebar-option {
   display: flex;
-  align-items: center;       /* vertically center icon + text */
+  align-items: center;
   gap: 12px;
-  padding: 8px 16px;
-  border-radius: 12px;
-  background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  justify-content: flex-start;
-  transition: background 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
-  height: 64px; /* Increased height to accommodate larger icon */
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  position: relative;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Active vertical indicator */
+.sidebar-option.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: #1976d2;
+  transition: all 0.3s ease;
 }
 
 /* Hover effect */
-a.mat-list-item.bubble:hover {
-  background-color: rgba(255, 255, 255, 0.12);
-  transform: translateX(2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+.sidebar-option:hover {
+  background: #e3f2fd;
+  transform: translateX(4px);
+  box-shadow: 0 6px 12px rgba(33, 150, 243, 0.15);
 }
 
-/* Active state */
-a.mat-list-item.bubble.active {
-  background-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+/* Active look */
+.sidebar-option.active {
+  background: #e8f4fe; /* soft blue background */
+  border-color: rgba(25, 118, 210, 0.2);
+  transform: none;
+  box-shadow: inset 0 0 0 2px rgba(33, 150, 243, 0.15);
+}
+
+.sidebar-option.active.icon-only {
+  background: #e8f4fe;
+  border-color: rgba(25, 118, 210, 0.2);
+  box-shadow: inset 0 0 0 2px rgba(33, 150, 243, 0.15);
 }
 
 /* Icon styling */
-.mat-list-item .mat-icon {
-  font-size: 100px;
-  color: #fff;
-  display: block;
-  flex-shrink: 0;
-  margin-top: 0;
+.sidebar-option mat-icon {
+  font-size: 22px;
+  color: #1976d2;
+  transition: transform 0.25s ease, color 0.25s ease;
 }
 
-/* Text styling */
-.mat-list-item span {
-  color: #fff;
+.sidebar-option:hover mat-icon {
+  transform: scale(1.15);
+  color: #0d47a1;
+}
+
+/* Label text */
+.label {
+  color: #333;
+  font-weight: 500;
+  font-size: 15px;
+  transition: color 0.25s ease;
+}
+
+/* When active */
+.sidebar-option.active .label {
+  color: #0d47a1;
   font-weight: 600;
-  font-size: 20px;
-  line-height: 40px;
-  display: block;
-  margin-top: 0;
 }
 
-/* Collapsed mode: hide text */
-.sidebar.collapsed a.mat-list-item span,
-.sidebar.collapsed h3.mat-subheader {
-  display: none;
+/* Collapsed state */
+.sidebar-option.icon-only {
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 8px;
+  border-radius: 50%;
+  margin: 0 auto;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid transparent;
+  transform: none;
 }
 
-/* Divider spacing */
-mat-divider {
-  margin: 8px 0;
-  background-color: rgba(255, 255, 255, 0.1);
+/* Scrollbar styling */
+.sidebar-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.2);
+  border-radius: 6px;
 }
 
-/* Ripple customization */
+/* Ripple – make it quick and subtle */
 .mat-ripple-element {
-  background-color: rgba(255, 255, 255, 0.15) !important;
+  background-color: rgba(25, 118, 210, 0.18) !important;
+  animation-duration: 120ms !important;
+  transition-duration: 120ms !important;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .sidebar {
-    position: absolute;
-    left: -260px;
-    z-index: 1000;
-  }
-
-  .sidebar.open {
-    left: 0;
-  }
+.sidebar-option:hover::before {
+  background: #64b5f6;
+  width: 3px;
 }
-

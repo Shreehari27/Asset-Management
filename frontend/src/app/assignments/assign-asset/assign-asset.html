@@ -146,12 +146,14 @@
     </div>
 
     <div class="actions">
-      <button mat-button color="primary" type="button" (click)="addAssignment()">
+      <button *ngIf="authService.getRole() === 'IT'" mat-button color="primary" type="button" (click)="addAssignment()">
         <mat-icon>add</mat-icon> Add Another Asset
       </button>
-      <button mat-raised-button color="primary" type="submit">
+
+      <button *ngIf="authService.getRole() === 'IT'" mat-raised-button color="primary" type="submit">
         <mat-icon>send</mat-icon> Assign Assets
       </button>
+
     </div>
   </form>
 </div>

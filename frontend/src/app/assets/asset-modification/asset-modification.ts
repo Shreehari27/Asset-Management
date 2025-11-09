@@ -80,13 +80,16 @@ export class AssetModificationComponent implements OnInit, OnDestroy {
   }
 
   loadITEmployees() {
-    this.empService.getEmployees().subscribe({
-      next: (data: Employee[]) => {
-        this.employees = data.filter((emp: Employee) => emp.isIT && emp.status === 'active');
-      },
-      error: (err: any) => console.error('❌ Failed to load employees', err)
-    });
-  }
+  this.empService.getEmployees().subscribe({
+    next: (data: Employee[]) => {
+      this.employees = data.filter(
+        (emp: Employee) => emp.role === 'IT' && emp.status === 'active'
+      );
+    },
+    error: (err: any) => console.error('❌ Failed to load employees', err)
+  });
+}
+
 
   loadModifications() {
     this.http.get<any[]>(`${this.baseUrl}/modifications/${this.assetCode}`).subscribe({ // ✅ GET aligned with route

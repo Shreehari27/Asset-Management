@@ -14,6 +14,7 @@ import { Asset } from '../../shared/models/asset';
 import { AssetService } from '../../services/Sharedasset';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CdkTableModule } from '@angular/cdk/table';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-asset-list',
@@ -70,10 +71,18 @@ export class AssetList implements OnInit {
     'Jio/Airtel Modem', 'Others'
   ];
 
-  constructor(private assetService: AssetService, private router: Router) {}
+  constructor(
+    private assetService: AssetService,
+    private router: Router,
+    public authService: AuthService) { }
 
   ngOnInit(): void {
     this.loadAssets();
+
+    const role = this.authService.getRole();
+    if (role !== 'IT') {
+      this.displayedColumns = this.displayedColumns.filter(col => col !== 'actions');
+    }
   }
 
   loadAssets(): void {

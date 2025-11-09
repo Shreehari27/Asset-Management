@@ -11,6 +11,7 @@ import { MatTableModule } from '@angular/material/table';
 import { FormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { FilterPipe } from '../../shared/models/pipes/filter-pipe';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-employee-list',
@@ -32,13 +33,14 @@ import { FilterPipe } from '../../shared/models/pipes/filter-pipe';
   styleUrls: ['./employee-list.css']
 })
 export class EmployeeListComponent implements OnInit {
-  displayedColumns: string[] = ['emp_code', 'name', 'email', 'isIT', 'status', 'actions'];
+  displayedColumns: string[] = ['emp_code', 'name', 'email', 'role', 'status', 'actions'];
   dataSource: Employee[] = [];
   filteredData: Employee[] = [];
   searchText = '';
   statusFilter = '';
+  roleFilter = ''; // new filter
 
-  constructor(private employeeService: EmployeeService) {}
+  constructor(private employeeService: EmployeeService, public authService: AuthService) {}
 
   ngOnInit() {
     this.loadEmployees();
@@ -55,10 +57,29 @@ export class EmployeeListComponent implements OnInit {
   }
 
   applyFilter() {
-    this.filteredData = this.statusFilter
-      ? this.dataSource.filter(
-          (emp) => emp.status?.toLowerCase() === this.statusFilter.toLowerCase()
-        )
-      : [...this.dataSource];
+    // combine role + status + search
+    const s = this.searchText?.toLowerCase() || '';
+    const status = this.statusFilter?.toLowerCase() || '';
+    const role = this.roleFilter || '';
+
+    this.filteredData = this.dataSource.filter(emp => {
+      const matchesSearch =
+        !s ||
+        (emp.name && emp.name.toLowerCase().includes(s)) ||
+        (emp.email && emp.email.toLowerCase().includes(s)) ||
+        (emp.emp_code && emp.emp_code.toLowerCase().includes(s));
+
+      const matchesStatus = !status || (emp.status && emp.status.toLowerCase() === status);
+      const matchesRole = !role || (emp.role && emp.role === role);
+
+      return matchesSearch && matchesStatus && matchesRole;
+    });
+  }
+
+  resetFilters() {
+    this.searchText = '';
+    this.statusFilter = '';
+    this.roleFilter = '';
+    this.filteredData = [...this.dataSource];
   }
 }

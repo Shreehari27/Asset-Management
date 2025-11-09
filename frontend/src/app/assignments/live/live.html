@@ -1,39 +1,67 @@
 <h2 class="assignments-header">Live Assignments</h2>
 
-<!-- Search / Filter Form -->
-<div class="search-container">
-  <!-- Asset Type Dropdown -->
-  <mat-form-field appearance="outline">
-    <mat-label>Asset Type</mat-label>
-    <mat-select [(ngModel)]="filters.asset_type" (selectionChange)="filterAssignments()">
-      <mat-option value="">All</mat-option>
-      <mat-option *ngFor="let type of assetTypes" [value]="type">
-        {{ type }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+<!-- 🔍 Smart Live Filter -->
+<mat-card class="filter-card">
+  <div class="filter-container">
 
-  <!-- Brand -->
-  <mat-form-field appearance="outline">
-    <mat-label>Brand</mat-label>
-    <input matInput [(ngModel)]="filters.asset_brand" (input)="filterAssignments()" placeholder="Brand">
-  </mat-form-field>
+    <!-- Asset Type -->
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Asset Type</mat-label>
+      <mat-select [(ngModel)]="filters.asset_type" (selectionChange)="filterAssignments()">
+        <mat-option value="">All</mat-option>
+        <mat-option *ngFor="let type of assetTypes" [value]="type">{{ type }}</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <!-- Serial Number -->
-  <mat-form-field appearance="outline">
-    <mat-label>Serial Number</mat-label>
-    <input matInput [(ngModel)]="filters.serial_number" (input)="filterAssignments()" placeholder="Serial Number">
-  </mat-form-field>
+    <!-- Brand -->
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Brand</mat-label>
+      <input
+        matInput
+        [(ngModel)]="filters.asset_brand"
+        (input)="filterAssignments()"
+        placeholder="e.g. Dell / HP / Lenovo" />
+    </mat-form-field>
 
-  <!-- Assigned To -->
-  <mat-form-field appearance="outline">
-    <mat-label>Assigned To</mat-label>
-    <input matInput [(ngModel)]="filters.assigned_to" (input)="filterAssignments()" placeholder="Emp Code / Email">
-  </mat-form-field>
+    <!-- Serial Number -->
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Serial Number</mat-label>
+      <input
+        matInput
+        [(ngModel)]="filters.serial_number"
+        (input)="filterAssignments()"
+        placeholder="e.g. SN12345" />
+    </mat-form-field>
 
-  <!-- Reset Button -->
-  <button mat-stroked-button color="primary" (click)="resetFilter()">Reset</button>
-</div>
+    <!-- PSD ID -->
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>PSD ID</mat-label>
+      <input
+        matInput
+        [(ngModel)]="filters.psd_id"
+        (input)="filterAssignments()"
+        placeholder="e.g. PSD-1234" />
+    </mat-form-field>
+
+    <!-- Assigned To -->
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Assigned To</mat-label>
+      <input
+        matInput
+        [(ngModel)]="filters.assigned_to"
+        (input)="filterAssignments()"
+        placeholder="Emp Code / Name / Email" />
+    </mat-form-field>
+
+    <!-- Reset -->
+    <div class="filter-actions">
+      <button mat-flat-button color="warn" (click)="resetFilter()">
+        <mat-icon>refresh</mat-icon> Reset
+      </button>
+    </div>
+
+  </div>
+</mat-card>
 
 <!-- Table Wrapper -->
 <div class="table-container mat-elevation-z8">

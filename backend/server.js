@@ -9,7 +9,9 @@ import assignmentRoutes from "./routes/assignmentRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import scrapRoutes from "./routes/scrapRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-import { generateGatePass } from "./controllers/gatepassController.js";
+import  {generateGatePass}  from "./controllers/gatepassController.js";
+import reportRoutes from "./routes/reportRoutes.js";
+
 
 dotenv.config();
 const app = express();
@@ -33,6 +35,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/scrap", scrapRoutes);
 app.use('/api/auth', authRoutes);
 app.use("/api/gatepass", generateGatePass);
+app.use("/api/reports", reportRoutes);
 
 
 
