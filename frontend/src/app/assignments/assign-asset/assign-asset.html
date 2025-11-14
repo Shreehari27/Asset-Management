@@ -1,14 +1,17 @@
 <div class="assign-container">
   <h2>Assign Assets</h2>
+
   <form [formGroup]="assignmentForm" (ngSubmit)="onSubmit()">
 
-    <!-- Employee + IT Staff -->
+    <!-- Employee Selection -->
     <div class="row">
-      <!-- Employee Autocomplete -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Select Employee</mat-label>
-        <input type="text" matInput [matAutocomplete]="empAuto" [(ngModel)]="employeeSearch"
-          (ngModelChange)="filterEmployees()" formControlName="emp_code" required />
+        <input matInput type="text" [matAutocomplete]="empAuto"
+               [(ngModel)]="employeeSearch"
+               (ngModelChange)="filterEmployees()"
+               formControlName="emp_code"
+               required />
         <mat-autocomplete #empAuto="matAutocomplete" [displayWith]="displayEmp.bind(this)">
           <mat-option *ngFor="let emp of filteredEmployees" [value]="emp.emp_code">
             {{ emp.name }} ({{ emp.emp_code }})
@@ -16,13 +19,10 @@
         </mat-autocomplete>
       </mat-form-field>
 
-
-      <!-- Assigned By (Auto-filled) -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Assigned By</mat-label>
         <input matInput formControlName="assigned_by" readonly />
       </mat-form-field>
-
     </div>
 
     <!-- PSD ID -->
@@ -33,32 +33,43 @@
       </mat-form-field>
     </div>
 
-    <!-- Asset Rows -->
+    <!-- Assignment Rows -->
     <div formArrayName="assignments">
       <div *ngFor="let a of assignments.controls; let i = index" [formGroupName]="i" class="assignment-row">
 
         <div class="row">
-          <!-- Asset Type Autocomplete -->
+
+          <!-- Asset Type -->
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Asset Type</mat-label>
-            <input type="text" matInput [matAutocomplete]="assetAuto" [(ngModel)]="assetTypeSearch[i]"
-              (ngModelChange)="filterAssetTypes(i)" formControlName="asset_type" required />
+            <input matInput type="text" [matAutocomplete]="assetAuto"
+                   [(ngModel)]="assetTypeSearch[i]"
+                   (ngModelChange)="filterAssetTypes(i)"
+                   formControlName="asset_type"
+                   required />
             <mat-autocomplete #assetAuto="matAutocomplete" (optionSelected)="onAssetTypeChange(i)">
-              <mat-option *ngFor="let t of filteredAssetTypes[i]" [value]="t">{{ t }}</mat-option>
+              <mat-option *ngFor="let t of filteredAssetTypes[i]" [value]="t">
+                {{ t }}
+              </mat-option>
             </mat-autocomplete>
           </mat-form-field>
 
-          <!-- Cable Type Autocomplete (if cables) -->
+          <!-- Cable Type -->
           <mat-form-field *ngIf="isCables(i)" appearance="outline" class="row-field">
             <mat-label>Cable Type</mat-label>
-            <input type="text" matInput [matAutocomplete]="cableAuto" [(ngModel)]="cableTypeSearch[i]"
-              (ngModelChange)="filterCableTypes(i)" formControlName="cable_type" required />
+            <input matInput type="text" [matAutocomplete]="cableAuto"
+                   [(ngModel)]="cableTypeSearch[i]"
+                   (ngModelChange)="filterCableTypes(i)"
+                   formControlName="cable_type"
+                   required />
             <mat-autocomplete #cableAuto="matAutocomplete" (optionSelected)="onCableTypeChange(i)">
-              <mat-option *ngFor="let c of filteredCableTypes[i]" [value]="c">{{ c }}</mat-option>
+              <mat-option *ngFor="let c of filteredCableTypes[i]" [value]="c">
+                {{ c }}
+              </mat-option>
             </mat-autocomplete>
           </mat-form-field>
 
-          <!-- Asset Code for cables -->
+          <!-- Asset Code (Cables) -->
           <mat-form-field *ngIf="isCables(i)" appearance="outline" class="row-field">
             <mat-label>Asset Code</mat-label>
             <mat-select formControlName="asset_code" required>
@@ -68,7 +79,7 @@
             </mat-select>
           </mat-form-field>
 
-          <!-- Asset Code for non-cables -->
+          <!-- Asset Code (Others) -->
           <mat-form-field *ngIf="!isCables(i)" appearance="outline" class="row-field">
             <mat-label>Asset Code</mat-label>
             <input matInput formControlName="asset_code" (blur)="onAssetCodeBlur(i)" required />
@@ -82,6 +93,16 @@
             <mat-label>Serial Number</mat-label>
             <input matInput formControlName="serial_number" />
           </mat-form-field>
+
+          <!-- LOCATION DROPDOWN -->
+          <mat-form-field appearance="outline" class="row-field">
+            <mat-label>Location</mat-label>
+            <mat-select formControlName="location" required>
+              <mat-option value="Office-ECITY">Office-ECITY</mat-option>
+              <mat-option value="EmployeeWFH">EmployeeWFH</mat-option>
+            </mat-select>
+          </mat-form-field>
+
         </div>
 
         <!-- Brand / Processor / Charger -->
@@ -105,7 +126,7 @@
           </mat-form-field>
         </div>
 
-        <!-- Warranty Dates -->
+        <!-- Warranty -->
         <div class="row" *ngIf="!isCables(i)">
           <mat-form-field appearance="outline" class="row-field">
             <mat-label>Warranty Start</mat-label>
@@ -153,7 +174,7 @@
       <button *ngIf="authService.getRole() === 'IT'" mat-raised-button color="primary" type="submit">
         <mat-icon>send</mat-icon> Assign Assets
       </button>
-
     </div>
+
   </form>
 </div>

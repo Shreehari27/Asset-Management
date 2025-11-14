@@ -5,11 +5,12 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../services/dashboard';
 import { environment } from '../../environments/environment';
+import { MatIcon } from "@angular/material/icon";
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatExpansionModule, FormsModule],
+  imports: [CommonModule, MatCardModule, MatExpansionModule, FormsModule, MatIcon],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })

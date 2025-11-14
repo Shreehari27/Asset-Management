@@ -21,6 +21,7 @@ export interface Asset {
   assign_remark?: string;
   parent_asset_code?: string;
   status?: string;
+  location?: string;
 }
 
 @Injectable({

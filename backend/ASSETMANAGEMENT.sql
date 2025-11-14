@@ -106,3 +106,5 @@ DESCRIBE assets;
 describe assignment_active;
 select * from asset_scrap;
 
+
+

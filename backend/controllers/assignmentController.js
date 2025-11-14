@@ -8,7 +8,7 @@ export const assignAsset = async (req, res) => {
     const assignments = Array.isArray(req.body) ? req.body : [req.body];
     const results = [];
 
-    const assignedBy = req.user?.emp_code; // ✅ take from JWT
+    const assignedBy = req.user?.emp_code; // ✅ From JWT
     if (!assignedBy) {
       return res.status(401).json({ error: "Unauthorized: missing emp_code in token" });
     }
@@ -26,6 +26,7 @@ export const assignAsset = async (req, res) => {
         processor,
         warranty_start,
         warranty_end,
+        location   // ✅ Added
       } = assignment;
 
       if (!psd_id || !asset_code || !emp_code || !assign_date) {
@@ -57,7 +58,7 @@ export const assignAsset = async (req, res) => {
         continue;
       }
 
-      // 3️⃣ Proceed with assignment — ✅ use assignedBy from token
+      // 3️⃣ Insert into assignment_active (assignedBy is from token)
       await pool.query(
         `INSERT INTO assignment_active 
           (psd_id, asset_code, emp_code, assigned_by, assign_date, assign_remark)
@@ -65,11 +66,16 @@ export const assignAsset = async (req, res) => {
         [psd_id, asset_code, emp_code, assignedBy, assign_date, assign_remark]
       );
 
-      // 4️⃣ Update asset details
+      // 4️⃣ Update asset details including LOCATION
       await pool.query(
         `UPDATE assets
-         SET serial_number = ?, asset_brand = ?, processor = ?, 
-             warranty_start = ?, warranty_end = ?, status = 'assigned'
+         SET serial_number = ?, 
+             asset_brand = ?, 
+             processor = ?, 
+             warranty_start = ?, 
+             warranty_end = ?, 
+             location = ?,        -- ✅ UPDATED
+             status = 'assigned'
          WHERE asset_code = ?`,
         [
           serial_number || null,
@@ -77,7 +83,8 @@ export const assignAsset = async (req, res) => {
           processor || null,
           warranty_start || null,
           warranty_end || null,
-          asset_code,
+          location || null,      // ✅ NEW FIELD
+          asset_code
         ]
       );
 
@@ -103,8 +110,11 @@ export const getLiveAssignments = async (req, res) => {
 
     if (req.user.role === 'Employee') {
       [rows] = await pool.query(`
-        SELECT aa.psd_id, aa.asset_code, a.serial_number, a.asset_type, a.asset_brand, a.processor,
-               e.name AS employee_name, e.emp_code, aa.assigned_by, aa.assign_date, aa.assign_remark
+        SELECT aa.psd_id, aa.asset_code, a.serial_number, a.asset_type, 
+               a.asset_brand, a.processor,
+               e.name AS employee_name, e.emp_code, aa.assigned_by, 
+               aa.assign_date, aa.assign_remark, 
+               a.location                   
         FROM assignment_active aa
         JOIN assets a ON aa.asset_code = a.asset_code
         JOIN employees e ON aa.emp_code = e.emp_code
@@ -113,8 +123,11 @@ export const getLiveAssignments = async (req, res) => {
       `, [req.user.emp_code]);
     } else {
       [rows] = await pool.query(`
-        SELECT aa.psd_id, aa.asset_code, a.serial_number, a.asset_type, a.asset_brand, a.processor,
-               e.name AS employee_name, e.emp_code, aa.assigned_by, aa.assign_date, aa.assign_remark
+        SELECT aa.psd_id, aa.asset_code, a.serial_number, a.asset_type, 
+               a.asset_brand, a.processor,
+               e.name AS employee_name, e.emp_code, aa.assigned_by, 
+               aa.assign_date, aa.assign_remark,
+               a.location                   
         FROM assignment_active aa
         JOIN assets a ON aa.asset_code = a.asset_code
         JOIN employees e ON aa.emp_code = e.emp_code
@@ -130,15 +143,19 @@ export const getLiveAssignments = async (req, res) => {
 };
 
 
+
 // =============================
 // ➤ Get Assignment History
 // =============================
 export const getAssignmentHistory = async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT ah.psd_id, ah.asset_code, a.serial_number, a.asset_type, a.asset_brand, a.processor,
-             e.emp_code, ah.assigned_by, ah.assign_date, ah.return_date, ah.returned_to,
-             ah.assign_remark, ah.return_remark
+      SELECT ah.psd_id, ah.asset_code, a.serial_number, a.asset_type, 
+             a.asset_brand, a.processor,
+             e.emp_code, ah.assigned_by, ah.assign_date, ah.return_date, 
+             ah.returned_to,
+             ah.assign_remark, ah.return_remark,
+             a.location                      
       FROM assignment_history ah
       JOIN assets a ON ah.asset_code = a.asset_code
       JOIN employees e ON ah.emp_code = e.emp_code
@@ -151,26 +168,28 @@ export const getAssignmentHistory = async (req, res) => {
   }
 };
 
+
+
 // =============================
-// ✅ Return Asset (Fixed: Prevent duplicate history entry)
+// Return Asset
 // =============================
 export const returnAsset = async (req, res) => {
   try {
     const { asset_code } = req.params;
     const { return_date, return_remark } = req.body;
-    const return_to = req.user?.emp_code; // ✅ from JWT
+    const return_to = req.user?.emp_code; // from JWT
 
     if (!return_date) {
       return res.status(400).json({ error: "return_date is required" });
     }
 
-    // 1️⃣ Set session variables for trigger
+    // Trigger variables
     await pool.query("SET @return_to = ?, @return_remark = ?", [
       return_to,
       return_remark || "Returned",
     ]);
 
-    // 2️⃣ Delete from active — trigger handles history update
+    // Delete from active → trigger inserts into history
     const [result] = await pool.query(
       "DELETE FROM assignment_active WHERE asset_code = ?",
       [asset_code]
@@ -180,7 +199,7 @@ export const returnAsset = async (req, res) => {
       return res.status(404).json({ error: "No active assignment found for this asset" });
     }
 
-    // 3️⃣ Directly update asset status to available (redundant but safe)
+    // Update asset status
     await pool.query(
       "UPDATE assets SET status = 'available' WHERE asset_code = ?",
       [asset_code]
@@ -192,6 +211,7 @@ export const returnAsset = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 // =============================
@@ -218,7 +238,8 @@ export const getLiveAssignmentsByEmpCode = async (req, res) => {
         e.emp_code,
         aa.assigned_by,
         aa.assign_date,
-        aa.assign_remark
+        aa.assign_remark,
+        a.location               
       FROM assignment_active aa
       JOIN assets a ON aa.asset_code = a.asset_code
       JOIN employees e ON aa.emp_code = e.emp_code

@@ -1,36 +1,59 @@
 <div class="dashboard-container">
-  <h2 class="dashboard-heading">Dashboard</h2>
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h2>📊 Asset Management Dashboard</h2>
+    <p class="subtitle">Real-time summary of assets, employees & inventory</p>
+  </div>
 
   <!-- Summary Cards -->
   <div class="cards">
-    <mat-card class="stat-card">
-      <div class="stat-title">Total Assets</div>
-      <div class="stat-value">{{ totalAssets }}</div>
+    <mat-card class="stat-card total">
+      <div class="icon">💼</div>
+      <div>
+        <div class="stat-title">Total Assets</div>
+        <div class="stat-value">{{ totalAssets }}</div>
+      </div>
     </mat-card>
-    <mat-card class="stat-card">
-      <div class="stat-title">Assigned Assets</div>
-      <div class="stat-value">{{ assignedAssets }}</div>
+
+    <mat-card class="stat-card assigned">
+      <div class="icon">🧑‍💻</div>
+      <div>
+        <div class="stat-title">Assigned</div>
+        <div class="stat-value">{{ assignedAssets }}</div>
+      </div>
     </mat-card>
-    <mat-card class="stat-card">
-      <div class="stat-title">Available Assets</div>
-      <div class="stat-value">{{ availableAssets }}</div>
+
+    <mat-card class="stat-card available">
+      <div class="icon">📦</div>
+      <div>
+        <div class="stat-title">Available</div>
+        <div class="stat-value">{{ availableAssets }}</div>
+      </div>
     </mat-card>
-    <mat-card class="stat-card">
-      <div class="stat-title">Scrapped Assets</div>
-      <div class="stat-value">{{ scrappedAssets }}</div>
+
+    <mat-card class="stat-card scrapped">
+      <div class="icon">🗑️</div>
+      <div>
+        <div class="stat-title">Scrapped</div>
+        <div class="stat-value">{{ scrappedAssets }}</div>
+      </div>
     </mat-card>
-    <mat-card class="stat-card">
-      <div class="stat-title">Employees</div>
-      <div class="stat-value">{{ totalEmployees }}</div>
+
+    <mat-card class="stat-card employees">
+      <div class="icon">👥</div>
+      <div>
+        <div class="stat-title">Employees</div>
+        <div class="stat-value">{{ totalEmployees }}</div>
+      </div>
     </mat-card>
   </div>
 
-  <!-- Asset Type Statistics -->
+  <!-- Asset Type Summary -->
   <h3 class="section-heading">Asset Type Statistics</h3>
   <div class="cards">
-    <mat-card class="stat-card" *ngFor="let type of objectKeys(assetTypeSummary)">
-      <div class="stat-title">{{ type }}</div>
-      <div class="stat-value">
+    <mat-card class="type-card" *ngFor="let type of objectKeys(assetTypeSummary)">
+      <div class="type-title">{{ type }}</div>
+      <div class="type-details">
         <div>Assigned: {{ assetTypeSummary[type].assigned }}</div>
         <div>Available: {{ assetTypeSummary[type].available }}</div>
         <div>Scrapped: {{ assetTypeSummary[type].scrapped }}</div>
@@ -41,35 +64,16 @@
     </mat-card>
   </div>
 
-  <!-- Cable Type Statistics -->
-  <h3 class="section-heading">Cable Type Statistics</h3>
-  <div class="cards">
-    <mat-card class="stat-card" *ngFor="let type of objectKeys(cableTypeSummary)">
-      <div class="stat-title">{{ type }}</div>
-      <div class="stat-value">
-        <div>Assigned: {{ cableTypeSummary[type].assigned }}</div>
-        <div>Available: {{ cableTypeSummary[type].available }}</div>
-        <div>Scrapped: {{ cableTypeSummary[type].scrapped }}</div>
-        <div *ngIf="cableTypeSummary[type]?.ready_to_be_assigned !== undefined">
-          New: {{ cableTypeSummary[type]?.ready_to_be_assigned }}
-        </div>
-      </div>
-    </mat-card>
-  </div>
-
-  <!-- Collapsible Report Section -->
+  <!-- Accordion Sections -->
   <mat-accordion multi="true" class="report-accordion">
-
-    <!-- Reorder Level Summary -->
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>📦 Reorder Level Summary</mat-panel-title>
       </mat-expansion-panel-header>
-
       <div class="cards">
-        <mat-card class="stat-card" *ngFor="let item of reorderLevelSummary">
-          <div class="stat-title">{{ item.asset_type }}</div>
-          <div class="stat-value">
+        <mat-card class="type-card" *ngFor="let item of reorderLevelSummary">
+          <div class="type-title">{{ item.asset_type }}</div>
+          <div class="type-details">
             <div>Available: {{ item.available }}</div>
             <div>New: {{ item.ready_to_be_assigned }}</div>
             <div>Total in Hand: {{ item.total_in_hand }}</div>
@@ -78,16 +82,14 @@
       </div>
     </mat-expansion-panel>
 
-    <!--  Inventory Summary -->
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>🧾 Inventory Summary</mat-panel-title>
       </mat-expansion-panel-header>
-
       <div class="cards">
-        <mat-card class="stat-card" *ngFor="let lot of lotStatistics">
-          <div class="stat-title">Lot: {{ lot.lot_number }}</div>
-          <div class="stat-value">
+        <mat-card class="type-card" *ngFor="let lot of lotStatistics">
+          <div class="type-title">Lot: {{ lot.lot_number }}</div>
+          <div class="type-details">
             <div>Total Items: {{ lot.total_items }}</div>
             <div *ngFor="let status of objectKeys(lot.status_breakdown)">
               {{ status }}: {{ lot.status_breakdown[status] }}
@@ -98,36 +100,72 @@
     </mat-expansion-panel>
   </mat-accordion>
 
-  <!--  Reports & Tally Section -->
-  <h3 class="section-heading">Reports & Tally Check</h3>
-  <div class="cards">
+  <!-- Reports & Tally Section -->
+<h3 class="section-heading">Reports & Tally Check</h3>
 
-    <!-- Tally Summary -->
-    <mat-card class="stat-card">
-      <div class="stat-title">Tally Summary</div>
-      <div class="stat-value small">
-        <div>Total Assets: {{ tally?.totalAssets }}</div>
-        <div>Lot Sum: {{ tally?.lotSum }}</div>
-        <div *ngIf="tally?.balanced; else mismatch">✅ Balanced</div>
-        <ng-template #mismatch>⚠️ Mismatch Found</ng-template>
+<div class="report-grid">
+  <!-- Tally Summary Card -->
+  <mat-card class="report-card tally-card">
+    <div class="report-header">
+      <span class="report-icon">📈</span>
+      <span class="report-title">Tally Summary</span>
+    </div>
+    <div class="report-body">
+      <div class="report-item">
+        <span>Total Assets</span>
+        <span class="value">{{ tally?.totalAssets }}</span>
       </div>
-    </mat-card>
-
-    <!-- Download Reports -->
-    <mat-card class="stat-card">
-      <div class="stat-title">Download Reports</div>
-      <div class="stat-value small">
-        <label>From:</label>
-        <input type="month" [(ngModel)]="fromMonth" />
-        <label>To:</label>
-        <input type="month" [(ngModel)]="toMonth" />
-        <button mat-raised-button color="primary" (click)="downloadStock()">📦 Stock</button>
-        <button mat-raised-button color="accent" (click)="downloadLedger()">🧾 Ledger</button>
-        <button mat-raised-button color="warn" (click)="downloadReorder()">📉 Reorder Level</button>
-        <button mat-raised-button color="success" (click)="downloadAgeAnalysis()">🕒 Age Analysis</button>
+      <div class="report-item">
+        <span>Lot Sum</span>
+        <span class="value">{{ tally?.lotSum }}</span>
       </div>
-    </mat-card>
 
+      <div class="report-status" *ngIf="tally?.balanced; else mismatch">
+        <mat-icon class="status-icon success">check_circle</mat-icon>
+        <span class="status-text success">Balanced ✅</span>
+      </div>
+      <ng-template #mismatch>
+        <div class="report-status">
+          <mat-icon class="status-icon warn">error</mat-icon>
+          <span class="status-text warn">Mismatch Found ⚠️</span>
+        </div>
+      </ng-template>
+    </div>
+  </mat-card>
 
-  </div>
+  <!-- Download Reports Card -->
+  <mat-card class="report-card download-card">
+    <div class="report-header">
+      <span class="report-icon">📥</span>
+      <span class="report-title">Download Reports</span>
+    </div>
+
+    <div class="report-body">
+      <div class="date-filters">
+        <div>
+          <label>From:</label>
+          <input type="month" [(ngModel)]="fromMonth" />
+        </div>
+        <div>
+          <label>To:</label>
+          <input type="month" [(ngModel)]="toMonth" />
+        </div>
+      </div>
+
+      <div class="report-buttons">
+        <button mat-raised-button color="primary" (click)="downloadStock()">
+          <mat-icon>inventory_2</mat-icon> Stock
+        </button>
+        <button mat-raised-button color="accent" (click)="downloadLedger()">
+          <mat-icon>description</mat-icon> Ledger
+        </button>
+        <button mat-raised-button color="warn" (click)="downloadReorder()">
+          <mat-icon>trending_down</mat-icon> Reorder
+        </button>
+        <button mat-raised-button class="age-btn" (click)="downloadAgeAnalysis()">
+          <mat-icon>schedule</mat-icon> Age Analysis
+        </button>
+      </div>
+    </div>
+  </mat-card>
 </div>

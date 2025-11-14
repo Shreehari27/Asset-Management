@@ -45,7 +45,6 @@ export class AssignAsset implements OnInit {
   filteredItPersons: Employee[] = [];
   availableCables: Asset[] = [];
 
-  /** Searchable fields */
   employeeSearch = '';
   itSearch = '';
   assetTypeSearch: string[] = [];
@@ -89,20 +88,16 @@ export class AssignAsset implements OnInit {
       assignments: this.fb.array([this.createAssignment()])
     });
 
-    // 🟡 Disable form for non-IT users
     if (role !== 'IT') {
       this.assignmentForm.disable();
     }
 
-    // Initialize search fields
     this.assetTypeSearch[0] = '';
     this.filteredAssetTypes[0] = [...this.assetTypes];
     this.cableTypeSearch[0] = '';
     this.filteredCableTypes[0] = [...this.cableTypes];
   }
 
-
-  /** Load employees */
   loadEmployees(): void {
     this.employeeService.getEmployees().subscribe({
       next: (res: Employee[]) => {
@@ -115,7 +110,6 @@ export class AssignAsset implements OnInit {
     });
   }
 
-  /** Form array handling */
   createAssignment(): FormGroup {
     return this.fb.group({
       asset_code: ['', Validators.required],
@@ -129,7 +123,10 @@ export class AssignAsset implements OnInit {
       warranty_end: [''],
       assign_date: ['', Validators.required],
       assign_remark: [''],
-      isNew: [true]
+      isNew: [true],
+
+      /** LOCATION ADDED HERE */
+      location: ['', Validators.required]
     });
   }
 
@@ -150,7 +147,6 @@ export class AssignAsset implements OnInit {
     if (this.assignments.length > 1) this.assignments.removeAt(i);
   }
 
-  /** Asset type helpers */
   isLaptopOrDesktop(i: number): boolean {
     const type = (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase().trim();
     return ['windows laptop', 'mac laptop', 'desktop', 'mini desktop'].includes(type);
@@ -165,7 +161,6 @@ export class AssignAsset implements OnInit {
     return (this.assignments.at(i).get('asset_type')?.value || '').toLowerCase() === 'cables';
   }
 
-  /** Search filters */
   filterEmployees(): void {
     const term = this.employeeSearch.toLowerCase();
     this.filteredEmployees = this.employees.filter(e =>
@@ -190,7 +185,6 @@ export class AssignAsset implements OnInit {
     this.filteredCableTypes[i] = this.cableTypes.filter(c => c.toLowerCase().includes(term));
   }
 
-  /** Asset type / cable change */
   onAssetTypeChange(i: number): void {
     const form = this.assignments.at(i);
     const assetType = form.get('asset_type')?.value?.toLowerCase();
@@ -209,10 +203,6 @@ export class AssignAsset implements OnInit {
 
     serial?.updateValueAndValidity();
     cableType?.updateValueAndValidity();
-
-    if (assetType === 'cables') {
-      form.patchValue({ processor: '', charger_serial: '', warranty_start: '', warranty_end: '' });
-    }
   }
 
   onCableTypeChange(i: number): void {
@@ -230,8 +220,7 @@ export class AssignAsset implements OnInit {
     });
   }
 
-
-  /** Asset code blur */
+  /** Asset Code Blur – now also loads location */
   onAssetCodeBlur(i: number): void {
     const form = this.assignments.at(i);
     const code = form.get('asset_code')?.value?.trim();
@@ -252,35 +241,23 @@ export class AssignAsset implements OnInit {
               charger_serial: asset.charger_serial || '',
               warranty_start: asset.warranty_start,
               warranty_end: asset.warranty_end,
+
+              /** FILL LOCATION HERE */
+              location: asset.location || 'Office-ECITY',
+
               isNew: false
             });
             form.get('asset_code')?.setErrors(null);
           }
         } else {
-          form.patchValue({ isNew: true });
+          form.patchValue({ isNew: true, location: '' });
           form.get('asset_code')?.setErrors(null);
-        }
-
-        // Check charger assignment
-        if (this.hasCharger(i) && form.get('charger_serial')?.value) {
-          const chargerCode = `${code}-CH`;
-          this.assetService.getAssetByCode(chargerCode).subscribe({
-            next: (ch: Asset | null) => {
-              if (ch && ch.status === 'assigned') {
-                this.snackBar.open(`⚠️ Charger ${chargerCode} is already assigned.`, 'Close', { duration: 3000 });
-                form.get('charger_serial')?.setErrors({ assigned: true });
-              } else {
-                form.get('charger_serial')?.setErrors(null);
-              }
-            }
-          });
         }
       },
       error: () => form.get('asset_code')?.setErrors(null)
     });
   }
 
-  /** Format date */
   private formatDate(date: any): string {
     if (!date) return '';
     const d = new Date(date);
@@ -322,7 +299,8 @@ export class AssignAsset implements OnInit {
         assign_date: this.formatDate(a.assign_date),
         assign_remark: a.assign_remark,
         warranty_start: this.isCables(i) ? '' : (a.isNew ? this.formatDate(a.warranty_start) : ''),
-        warranty_end: this.isCables(i) ? '' : (a.isNew ? this.formatDate(a.warranty_end) : '')
+        warranty_end: this.isCables(i) ? '' : (a.isNew ? this.formatDate(a.warranty_end) : ''),
+        location: a.location
       };
 
       payload.push(mainAsset);
@@ -338,7 +316,10 @@ export class AssignAsset implements OnInit {
           psd_id: parent.psd_id,
           assign_date: this.formatDate(a.assign_date),
           assign_remark: `Assigned along with ${a.asset_code}`,
-          parent_asset_code: a.asset_code
+          parent_asset_code: a.asset_code,
+
+          /** Chargers inherit main location */
+          location: a.location
         });
       }
     }

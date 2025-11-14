@@ -1,49 +1,55 @@
--- ===================================
--- 📦 ASSET MANAGEMENT SYSTEM DATABASE
--- Finalized Version (with warranty, scrap, and modification tracking)
--- ===================================
+-- ===========================================================
+-- 🚀 ASSET MANAGEMENT DATABASE SCHEMA
+-- ===========================================================
 
+-- Drop and create fresh database
+DROP DATABASE IF EXISTS ASSETMANAGEMENT;
 CREATE DATABASE ASSETMANAGEMENT;
 USE ASSETMANAGEMENT;
 
--- ================================
--- 👤 Employees Table
--- ================================
+-- ===========================================================
+-- 🧍 Employees Table
+-- ===========================================================
 CREATE TABLE employees (
     emp_code VARCHAR(20) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    isIT BOOLEAN DEFAULT FALSE,
+    role ENUM('IT', 'Manager', 'Employee') DEFAULT 'Employee',
     status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ================================
+-- ===========================================================
 -- 💻 Assets Table
--- ================================
+-- ===========================================================
 CREATE TABLE assets (
-    asset_code VARCHAR(20) PRIMARY KEY,
-    serial_number VARCHAR(100) UNIQUE,
-    asset_type VARCHAR(50) NOT NULL,
-    asset_brand VARCHAR(50),
-    processor VARCHAR(100) NULL,
+    asset_code VARCHAR(20) PRIMARY KEY,        
+    serial_number VARCHAR(100) UNIQUE NOT NULL,
+    asset_type VARCHAR(50) NOT NULL,           
+    asset_brand VARCHAR(50),                   
+    model_name VARCHAR(100) NULL,
+    purchase_date DATE NULL,
+    lot_number VARCHAR(100) NULL,
     warranty_start DATE NULL,
     warranty_end DATE NULL,
     warranty_status ENUM('active', 'expired', 'unknown') DEFAULT 'unknown',
+    processor VARCHAR(100) NULL,
+    cable_type VARCHAR(100) NULL,
     parent_asset_code VARCHAR(20) NULL,
-    status ENUM('available', 'ready_to_be_assigned', 'assigned', 'scrapped', 'repair', 'retired') DEFAULT 'available',
+    location VARCHAR(100) NULL,
+    status ENUM('available', 'ready_to_be_assigned', 'assigned', 'scrapped', 'repair') DEFAULT 'available',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (parent_asset_code) REFERENCES assets(asset_code)
 );
 
--- ================================
--- 🔄 Assignment Active (Live)
--- ================================
+-- ===========================================================
+-- 📦 Assignment Active (Live Assignments)
+-- ===========================================================
 CREATE TABLE assignment_active (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    psd_id VARCHAR(350) NOT NULL,
+    psd_id VARCHAR(50) NOT NULL,
     asset_code VARCHAR(20) NOT NULL,
     emp_code VARCHAR(20) NOT NULL,
     assigned_by VARCHAR(20) NOT NULL,
@@ -54,12 +60,12 @@ CREATE TABLE assignment_active (
     FOREIGN KEY (assigned_by) REFERENCES employees(emp_code)
 );
 
--- ================================
--- 📜 Assignment History (Log)
--- ================================
+-- ===========================================================
+-- 🧾 Assignment History (All Assignments Log)
+-- ===========================================================
 CREATE TABLE assignment_history (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    psd_id VARCHAR(350) NOT NULL,
+    psd_id VARCHAR(50) NOT NULL,
     asset_code VARCHAR(20) NOT NULL,
     emp_code VARCHAR(20) NOT NULL,
     assigned_by VARCHAR(20) NOT NULL,
@@ -74,15 +80,17 @@ CREATE TABLE assignment_history (
     FOREIGN KEY (returned_to) REFERENCES employees(emp_code)
 );
 
--- Indexes for performance
+-- ===========================================================
+-- ⚙️ Indexes
+-- ===========================================================
 CREATE INDEX idx_active_asset ON assignment_active(asset_code);
 CREATE INDEX idx_active_emp ON assignment_active(emp_code);
 CREATE INDEX idx_history_asset ON assignment_history(asset_code);
 CREATE INDEX idx_history_emp ON assignment_history(emp_code);
 
--- ================================
--- 🪓 Asset Scrap Table
--- ================================
+-- ===========================================================
+-- 🗑️ Asset Scrap Table
+-- ===========================================================
 CREATE TABLE asset_scrap (
     id INT AUTO_INCREMENT PRIMARY KEY,
     asset_code VARCHAR(50) NOT NULL,
@@ -96,9 +104,9 @@ CREATE TABLE asset_scrap (
     FOREIGN KEY (asset_code) REFERENCES assets(asset_code)
 );
 
--- ================================
--- 🧰 Asset Modification Table
--- ================================
+-- ===========================================================
+-- 🛠️ Asset Modifications Table
+-- ===========================================================
 CREATE TABLE asset_modifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     asset_code VARCHAR(20) NOT NULL,
@@ -109,47 +117,23 @@ CREATE TABLE asset_modifications (
     FOREIGN KEY (modified_by) REFERENCES employees(emp_code)
 );
 
--- ================================
--- ⚙️ Triggers
--- ================================
+-- ===========================================================
+-- 👤 User Logins Table
+-- ===========================================================
+CREATE TABLE user_logins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    emp_code VARCHAR(20) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (emp_code) REFERENCES employees(emp_code)
+);
 
--- 1️⃣ Warranty Status Trigger (on INSERT)
-DELIMITER //
-CREATE TRIGGER trg_update_warranty_status
-BEFORE INSERT ON assets
-FOR EACH ROW
-BEGIN
-    IF NEW.warranty_start IS NULL OR NEW.warranty_end IS NULL THEN
-        SET NEW.warranty_status = 'unknown';
-    ELSEIF CURDATE() < NEW.warranty_start THEN
-        SET NEW.warranty_status = 'unknown';
-    ELSEIF CURDATE() BETWEEN NEW.warranty_start AND NEW.warranty_end THEN
-        SET NEW.warranty_status = 'active';
-    ELSE
-        SET NEW.warranty_status = 'expired';
-    END IF;
-END;
-//
+-- ===========================================================
+-- 🧠 TRIGGERS
+-- ===========================================================
 
--- 2️⃣ Warranty Status Trigger (on UPDATE)
-CREATE TRIGGER trg_update_warranty_status_on_update
-BEFORE UPDATE ON assets
-FOR EACH ROW
-BEGIN
-    IF NEW.warranty_start IS NULL OR NEW.warranty_end IS NULL THEN
-        SET NEW.warranty_status = 'unknown';
-    ELSEIF CURDATE() < NEW.warranty_start THEN
-        SET NEW.warranty_status = 'unknown';
-    ELSEIF CURDATE() BETWEEN NEW.warranty_start AND NEW.warranty_end THEN
-        SET NEW.warranty_status = 'active';
-    ELSE
-        SET NEW.warranty_status = 'expired';
-    END IF;
-END;
-//
-DELIMITER ;
-
--- 3️⃣ Trigger: Insert Assignment → Add to History + Update Asset Status
+-- Insert Assignment → Log to History + Update Asset Status
 DELIMITER //
 CREATE TRIGGER trg_insert_assignment
 AFTER INSERT ON assignment_active
@@ -169,7 +153,7 @@ END;
 //
 DELIMITER ;
 
--- 4️⃣ Trigger: Return Assignment → Update History + Set Asset Available
+-- Return Assignment → Update History + Set Asset to Available
 DELIMITER //
 CREATE TRIGGER trg_return_assignment
 AFTER DELETE ON assignment_active
@@ -178,7 +162,8 @@ BEGIN
     UPDATE assignment_history
     SET 
         return_date = CURRENT_DATE,
-        return_remark = 'Returned'
+        return_remark = COALESCE(@return_remark, 'Returned'),
+        returned_to = @return_to
     WHERE 
         asset_code = OLD.asset_code
         AND emp_code = OLD.emp_code
@@ -192,9 +177,44 @@ END;
 //
 DELIMITER ;
 
--- ================================
--- 🕒 Scheduled Event: Daily Warranty Update
--- ================================
+-- Warranty Status Triggers
+DELIMITER //
+CREATE TRIGGER trg_update_warranty_status
+BEFORE INSERT ON assets
+FOR EACH ROW
+BEGIN
+    IF NEW.warranty_start IS NULL OR NEW.warranty_end IS NULL THEN
+        SET NEW.warranty_status = 'unknown';
+    ELSEIF CURDATE() < NEW.warranty_start THEN
+        SET NEW.warranty_status = 'unknown';
+    ELSEIF CURDATE() BETWEEN NEW.warranty_start AND NEW.warranty_end THEN
+        SET NEW.warranty_status = 'active';
+    ELSE
+        SET NEW.warranty_status = 'expired';
+    END IF;
+END;
+//
+
+CREATE TRIGGER trg_update_warranty_status_on_update
+BEFORE UPDATE ON assets
+FOR EACH ROW
+BEGIN
+    IF NEW.warranty_start IS NULL OR NEW.warranty_end IS NULL THEN
+        SET NEW.warranty_status = 'unknown';
+    ELSEIF CURDATE() < NEW.warranty_start THEN
+        SET NEW.warranty_status = 'unknown';
+    ELSEIF CURDATE() BETWEEN NEW.warranty_start AND NEW.warranty_end THEN
+        SET NEW.warranty_status = 'active';
+    ELSE
+        SET NEW.warranty_status = 'expired';
+    END IF;
+END;
+//
+DELIMITER ;
+
+-- ===========================================================
+-- ⏰ EVENT: Daily Warranty Status Update
+-- ===========================================================
 DROP EVENT IF EXISTS update_warranty_status_daily;
 
 CREATE EVENT update_warranty_status_daily
@@ -210,14 +230,9 @@ DO
             ELSE 'unknown'
         END;
 
--- ===================================
--- ✅ Final Check Commands
--- ===================================
-SELECT * FROM employees;
-SELECT * FROM assets;
-SELECT * FROM assignment_active;
-SELECT * FROM assignment_history;
-SELECT * FROM asset_scrap;
-SELECT * FROM asset_modifications;
-
-DESCRIBE assets;
+-- ===========================================================
+-- ✅ FINAL CHECKS
+-- ===========================================================
+SHOW TABLES;
+SHOW TRIGGERS;
+SHOW EVENTS;

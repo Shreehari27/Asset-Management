@@ -54,7 +54,7 @@ export class ReturnDialogComponent implements OnInit {
     this.returnForm = this.fb.group({
       return_date: [new Date(), Validators.required],
       return_remark: [''],
-      return_to: [{ value: empCode, disabled: true }, Validators.required], // ✅ Locked auto-fill
+      return_to: [{ value: empCode, disabled: true }, Validators.required],
     });
 
   }
