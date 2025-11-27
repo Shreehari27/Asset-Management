@@ -32,7 +32,8 @@ export class AssignmentService {
     return this.http.patch(`${this.baseUrl}/${payload.asset_code}/return`, {
       return_date: payload.return_date,
       return_remark: payload.return_remark,
-      return_to: payload.return_to
+      return_to: payload.return_to,
+      location: payload.location
     });
   }
   getLiveAssignmentsByEmp(empCode: string): Observable<any> {
@@ -42,7 +43,7 @@ export class AssignmentService {
   generateGatePass(data: any) {
     return this.http.post(
       `${environment.baseUrl}/gatepass/generate`, data,
-      { responseType: 'blob' } // important for docx download
+      { responseType: 'blob' } 
     );
   }
 }

@@ -37,7 +37,7 @@ interface DialogData {
 })
 export class ReturnDialogComponent implements OnInit {
   returnForm!: FormGroup;
-  itStaff: any[] = []; // List of IT staff
+  itStaff: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -55,6 +55,7 @@ export class ReturnDialogComponent implements OnInit {
       return_date: [new Date(), Validators.required],
       return_remark: [''],
       return_to: [{ value: empCode, disabled: true }, Validators.required],
+      location: ['', Validators.required]
     });
 
   }

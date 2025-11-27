@@ -176,20 +176,20 @@ export const getAssignmentHistory = async (req, res) => {
 export const returnAsset = async (req, res) => {
   try {
     const { asset_code } = req.params;
-    const { return_date, return_remark } = req.body;
-    const return_to = req.user?.emp_code; // from JWT
+    const { return_date, return_remark, location } = req.body;
+    const return_to = req.user?.emp_code;
 
     if (!return_date) {
       return res.status(400).json({ error: "return_date is required" });
     }
 
-    // Trigger variables
+    // Set trigger variables
     await pool.query("SET @return_to = ?, @return_remark = ?", [
       return_to,
-      return_remark || "Returned",
+      return_remark || "Returned"
     ]);
 
-    // Delete from active → trigger inserts into history
+    // Delete from assignment_active (trigger moves to history)
     const [result] = await pool.query(
       "DELETE FROM assignment_active WHERE asset_code = ?",
       [asset_code]
@@ -199,18 +199,20 @@ export const returnAsset = async (req, res) => {
       return res.status(404).json({ error: "No active assignment found for this asset" });
     }
 
-    // Update asset status
+    // Update asset as available + update location
     await pool.query(
-      "UPDATE assets SET status = 'available' WHERE asset_code = ?",
-      [asset_code]
+      "UPDATE assets SET status = 'available', location = ? WHERE asset_code = ?",
+      [location || 'Office-ECITY', asset_code]
     );
 
-    res.json({ message: `✅ Asset ${asset_code} returned successfully` });
+    res.json({ message: `✅ Asset ${asset_code} returned successfully with new location updated.` });
+
   } catch (err) {
     console.error("❌ Error returning asset:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 

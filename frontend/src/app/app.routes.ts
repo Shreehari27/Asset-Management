@@ -21,6 +21,7 @@ import { itGuard } from './it.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
+  { path: 'auth/callback', component: Login },
   { path: 'forgot-password', component: ForgotPassword },
   { path: 'signup', component: Signup },
 

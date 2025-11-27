@@ -1,6 +1,7 @@
 <h2 mat-dialog-title>Return Asset</h2>
 
 <mat-dialog-content [formGroup]="returnForm">
+
   <!-- Return Date -->
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Return Date</mat-label>
@@ -15,9 +16,18 @@
     <input matInput formControlName="return_remark" />
   </mat-form-field>
 
-  <!-- Return To (Auto-filled) -->
+  <!-- New Location -->
   <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Returned To (Auto-filled)</mat-label>
+    <mat-label>New Location</mat-label>
+    <mat-select formControlName="location" required>
+      <mat-option value="Office-ECITY">Office-ECITY</mat-option>
+      <mat-option value="EmployeeWFH">EmployeeWFH</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Returned To -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Returned To</mat-label>
     <input matInput formControlName="return_to" readonly />
   </mat-form-field>
 

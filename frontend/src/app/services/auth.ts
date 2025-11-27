@@ -88,4 +88,9 @@ export class AuthService {
     return this.getRole() === 'Employee';
   }
 
+  get authBaseUrl() {
+    return this.baseUrl;
+  }
+
+
 }

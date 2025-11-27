@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 import nodemailer from "nodemailer";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 // ✅ SIGNUP (validate email & active status)
 export const signup = async (req, res) => {
@@ -242,4 +244,62 @@ export const verifyResetOTP = async (req, res) => {
       .status(500)
       .json({ message: "Password reset failed", error: error.message });
   }
+};
+
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: `${process.env.BASE_URL}/api/auth/google/callback`,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+
+        // 1️⃣ Check if employee exists
+        const [employee] = await pool.query(
+          "SELECT emp_code, name, role, status FROM employees WHERE email = ?",
+          [email]
+        );
+
+        if (!employee.length)
+          return done(null, false, { message: "Email not found in employee records" });
+
+        if (employee[0].status !== "active")
+          return done(null, false, { message: "Inactive employee. Contact admin." });
+
+        // 2️⃣ Generate JWT
+        const token = jwt.sign(
+          {
+            emp_code: employee[0].emp_code,
+            email,
+            name: employee[0].name,
+            role: employee[0].role,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "1d" }
+        );
+
+        return done(null, { token });
+      } catch (error) {
+        return done(error, null);
+      }
+    }
+  )
+);
+
+export const googleAuth = passport.authenticate("google", {
+  scope: ["profile", "email"],
+});
+
+export const googleCallback = (req, res, next) => {
+  passport.authenticate("google", (err, data, info) => {
+    if (err) return res.redirect("/login?error=GoogleAuthFailed");
+    if (!data) return res.redirect("/login?error=Unauthorized");
+
+    // Redirect Angular with token
+    return res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${data.token}`);
+  })(req, res, next);
 };

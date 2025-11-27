@@ -1,21 +1,34 @@
-<div class="login-container">
-  <mat-card class="login-card">
-    <h2>Sign In</h2>
+<div class="login-wrapper">
+  <div class="login-card">
+    
+    <div class="brand-header">
+      <h2>Welcome Back</h2>
+      <p>Please sign in to continue</p>
+    </div>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <!-- Login Form -->
+    <form *ngIf="loginForm" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="form-section">
+
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" placeholder="Enter your email" />
-        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Email is required</mat-error>
-        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Invalid email</mat-error>
+        <input matInput type="email" formControlName="email" placeholder="Enter you email" />
+        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+          Email is required
+        </mat-error>
+        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+          Invalid email format
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Password</mat-label>
-        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
-          placeholder="Enter your password" />
-        <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
-          [attr.aria-label]="'Hide password'">
+        <input 
+          matInput 
+          [type]="hidePassword ? 'password' : 'text'" 
+          formControlName="password"
+          placeholder="••••••••"
+        />
+        <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
           <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
         <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
@@ -23,18 +36,35 @@
         </mat-error>
       </mat-form-field>
 
-      <button mat-flat-button color="primary" class="full-width" [disabled]="loading" type="submit">
+      <button 
+        mat-flat-button 
+        color="primary" 
+        class="btn-primary"
+        type="submit"
+        [disabled]="loading">
         {{ loading ? 'Signing in...' : 'Sign In' }}
       </button>
     </form>
 
-    <div class="signup-link">
-      <p>Don't have an account? <a routerLink="/signup">Sign up</a></p>
+    <!-- OR Divider -->
+    <div class="divider">
+      <span>OR</span>
     </div>
 
-    <div class="forgot-link">
-      <a (click)="goToForgot()">Forgot Password?</a>
+    <!-- Google Button -->
+    <button class="google-btn" (click)="continueWithGoogle()">
+      <img src="google.svg" alt="Google" class="google-icon">
+      <span>Continue with Google</span>
+    </button>
+
+    <div class="links">
+      <p>
+        Don't have an account? 
+        <a routerLink="/signup">Sign up</a>
+      </p>
+
+      <a class="forgot" (click)="goToForgot()">Forgot Password?</a>
     </div>
 
-  </mat-card>
+  </div>
 </div>

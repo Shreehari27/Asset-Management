@@ -130,6 +130,7 @@ export class Live implements OnInit {
         const formattedDate = returnDate.toISOString().slice(0, 19).replace('T', ' ');
 
         this.assignmentService.returnAsset({
+          location: result.location,
           asset_code: assignment.asset_code,
           return_date: formattedDate,
           return_remark: result.return_remark,
